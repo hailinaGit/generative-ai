@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+.venv/
+venv/
+ENV/
+
+# Chroma DB / Vector Stores
+chroma_db/
+*.db
+*.sqlite3
+
+# IDE & OS
+.DS_Store
+.vscode/
+.idea/
+*.log

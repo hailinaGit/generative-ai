@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cambodia HR & Labor Law RAG Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --card-border: #334155;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --tag-bg: #0369a1;
+      --tag-text: #bae6fd;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      margin-top: 10px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .sample-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .chip {
+      background: #334155;
+      color: #cbd5e1;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .chip svg, .btn svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .header-icon {
+      width: 26px;
+      height: 26px;
+      vertical-align: -4px;
+      margin-right: 6px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .chip:hover {
+      background: #475569;
+      color: #fff;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    textarea {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      resize: vertical;
+      min-height: 56px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 0 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .settings-row select {
+      background: #0f172a;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      outline: none;
+    }
+
+    .mode-switch {
+      display: flex;
+      gap: 10px;
+    }
+
+    .mode-switch label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    #resultArea {
+      display: none;
+    }
+
+    .answer-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .answer-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .answer-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #e2e8f0;
+      margin-bottom: 20px;
+      white-space: pre-wrap;
+    }
+
+    .citations-section h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .citation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .citation-card {
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .citation-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--tag-text);
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .citation-dist {
+      color: var(--text-muted);
+      font-size: 11px;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 30px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🇰🇭 Cambodia HR & Labor Law RAG Assistant</h1>
+      <p>Verified, grounded policy intelligence strictly derived from Cambodian Labor Regulations</p>
+      <div class="status-badge" id="systemStatus">
+        <span class="status-dot"></span> Checking DB status...
+      </div>
+    </header>
+
+    <div class="card">
+      <div class="sample-chips">
+        <div class="chip" onclick="setQuery('How many days of annual leave do employees receive in Cambodia?')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Annual Leave
+        </div>
+        <div class="chip" onclick="setQuery('What are the overtime pay rates for nighttime or Sundays?')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Overtime Rates
+        </div>
+        <div class="chip" onclick="setQuery('What is the policy for maternity leave duration and pay?')">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Maternity Leave
+        </div>
+        <div class="chip" onclick="setQuery('What is the 401(k) company matching in California?')">
+          <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Out-of-Scope (Fallback)
+        </div>
+      </div>
+
+      <div class="input-group">
+        <textarea id="questionInput" placeholder="Ask a question about Cambodian labor regulations (e.g. working hours, leave, overtime)..."></textarea>
+        <button class="btn" id="askBtn" onclick="submitQuery()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Ask AI
+        </button>
+      </div>
+
+      <div class="settings-row">
+        <div class="mode-switch">
+          <label>
+            <input type="radio" name="queryMode" value="query" checked>
+            <span>Full RAG Synthesis</span>
+          </label>
+          <label>
+            <input type="radio" name="queryMode" value="retrieve">
+            <span>Retrieval Only (No LLM)</span>
+          </label>
+        </div>
+        <div>
+          <label>Top Chunks: 
+            <select id="topK">
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      <div>Retrieving policy chunks & synthesizing grounded response...</div>
+    </div>
+
+    <div class="card" id="resultArea">
+      <div class="answer-header">
+        <div class="answer-title" id="resultModeTitle">Grounded Answer</div>
+      </div>
+      <div class="answer-text" id="answerContent"></div>
+      <div class="citations-section" id="citationsSection">
+        <h4>Verified Sources & Citations (FR-04)</h4>
+        <div class="citation-list" id="citationList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Check health on load
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('systemStatus').innerHTML = `
+            <span class="status-dot"></span> ChromaDB Connected: ${data.total_chunks} chunks ready
+          `;
+        }
+      } catch (e) {
+        document.getElementById('systemStatus').innerHTML = `
+          <span class="status-dot" style="background:#ef4444"></span> System offline
+        `;
+      }
+    }
+    checkHealth();
+
+    function setQuery(text) {
+      document.getElementById('questionInput').value = text;
+      submitQuery();
+    }
+
+    async function submitQuery() {
+      const input = document.getElementById('questionInput').value.trim();
+      if (!input) return;
+
+      const mode = document.querySelector('input[name="queryMode"]:checked').value;
+      const topK = parseInt(document.getElementById('topK').value, 10);
+      const btn = document.getElementById('askBtn');
+      const loader = document.getElementById('loader');
+      const resultArea = document.getElementById('resultArea');
+
+      btn.disabled = true;
+      loader.style.display = 'block';
+      resultArea.style.display = 'none';
+
+      try {
+        if (mode === 'retrieve') {
+          // Retrieval only endpoint
+          const res = await fetch('/retrieve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: input, top_k: topK })
+          });
+          const data = await res.json();
+          document.getElementById('resultModeTitle').innerText = `Retrieved ${data.count} Matching Chunks`;
+          document.getElementById('answerContent').innerText = "Direct semantic vector search results from ChromaDB:";
+          
+          const list = document.getElementById('citationList');
+          list.innerHTML = '';
+          data.results.forEach((c, idx) => {
+            const card = document.createElement('div');
+            card.className = 'citation-card';
+            card.innerHTML = `
+              <div class="citation-header">
+                <span>#${idx + 1}: ${c.source} &bull; ${c.section}</span>
+                <span class="citation-dist">Distance: ${c.distance}</span>
+              </div>
+              <div style="font-size:12px; color:#cbd5e1; margin-top:6px; line-height:1.5;">${c.content}</div>
+            `;
+            list.appendChild(card);
+          });
+          document.getElementById('citationsSection').style.display = 'block';
+        } else {
+          // Full RAG generation endpoint
+          const res = await fetch('/query', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question: input, top_k: topK, model: 'llama3.2', temperature: 0.0 })
+          });
+          const data = await res.json();
+          document.getElementById('resultModeTitle').innerText = "Grounded Answer";
+          // Strip any residual markdown bold markers (**) for clean UI presentation
+          const cleanAnswer = (data.answer || '').replace(/\*\*/g, '');
+          document.getElementById('answerContent').innerText = cleanAnswer;
+
+          const list = document.getElementById('citationList');
+          list.innerHTML = '';
+          if (data.citations && data.citations.length > 0) {
+            document.getElementById('citationsSection').style.display = 'block';
+            data.citations.forEach((c) => {
+              const card = document.createElement('div');
+              card.className = 'citation-card';
+              card.innerHTML = `
+                <div class="citation-header">
+                  <span>${c.source} &bull; ${c.section}</span>
+                  <span class="citation-dist">Distance: ${c.distance}</span>
+                </div>
+              `;
+              list.appendChild(card);
+            });
+          } else {
+            document.getElementById('citationsSection').style.display = 'none';
+          }
+        }
+        resultArea.style.display = 'block';
+      } catch (err) {
+        alert('Error communicating with API: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
+
