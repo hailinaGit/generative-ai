@@ -1,60 +1,107 @@
 # Generative AI Internship — Portfolio Repository
 
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
+[![Vector DB](https://img.shields.io/badge/Vector%20DB-ChromaDB-purple.svg)](https://www.trychroma.com/)
+[![Local LLM](https://img.shields.io/badge/LLM-Ollama%20(llama3.2)-orange.svg)](https://ollama.com/)
+
 > **Program:** Arrowstack 1-Month Generative AI Internship  
-> **Structure:** 3 Progressive, Portfolio-Oriented Industry Projects  
+> **Difficulty:** Intermediate • **Duration:** 4 Weeks  
 > **Working Mode:** Individual, Mentor-Reviewed, Evidence-Based Delivery  
+> **Author:** hailinaGit  
 
 ---
 
-## 📁 Repository Overview
+## 📖 Internship Summary & Roadmap
 
-This repository contains the end-to-end deliverables, code, tests, and documentation for the three core internship projects:
+This repository contains the end-to-end deliverables, source code, evaluation evidence, and documentation for **3 progressive industry-aligned generative AI projects** as defined in the Arrowstack Internship Handbook:
 
 ```text
-.
-├── project-1-rag-assistant/          # Project 1: RAG Knowledge Assistant (Completed)
-├── project-2-support-copilot/        # Project 2: AI Customer Support Copilot (In Progress)
-└── project-3-workflow-automation/    # Project 3: Document-to-Workflow Automation (Upcoming)
+Internship/
+├── project-1-rag-assistant/          # Project 1: RAG Knowledge Assistant (✅ Completed)
+├── project-2-support-copilot/        # Project 2: AI Customer Support Copilot (⏳ In Progress)
+└── project-3-workflow-automation/    # Project 3: Document-to-Workflow Automation (📋 Upcoming)
 ```
 
----
-
-## 🚀 Projects Summary
-
-### [Project 1: RAG Knowledge Assistant (Cambodia HR Compliance)](./project-1-rag-assistant)
-- **Domain:** Cambodian Labor Law & Internal Corporate HR Policies.
-- **Key Features:**
-  - Semantic section chunking & local ChromaDB vector store.
-  - Strict grounding ($\ge 95\%$) with temperature `0.0` and fallback safety controls for out-of-scope topics.
-  - Full citation traceability (`source`, `section`, `distance`).
-  - FastAPI deployment (`/health`, `/retrieve`, `/query`) + Interactive Web Chat UI.
-  - Automated 5-test assertion suite + 10-query benchmark evaluation report.
-- **Status:** **Completed & Verified**
+| Project | Type | Tech Stack | Status | Documentation & Evidence |
+| :--- | :--- | :--- | :---: | :--- |
+| **1. RAG Knowledge Assistant** | Core / Foundation | Python, ChromaDB, Ollama (`llama3.2`), FastAPI | **✅ Complete** | [Project 1 README](./project-1-rag-assistant/README.md) • [Eval Results](./project-1-rag-assistant/docs/eval_results.md) • [Viva Prep](./project-1-rag-assistant/docs/viva_prep.md) |
+| **2. AI Customer Support Copilot** | Intermediate Real-World | Python, LangChain, Structured Schemas, HITL UI | **⏳ In Progress** | [Project 2 Folder](./project-2-support-copilot/) |
+| **3. Document-to-Workflow Automation** | Capstone Portfolio | Python, JSON Schema, Workflow Routing | **📋 Upcoming** | Planned |
 
 ---
 
-### [Project 2: AI Customer Support Copilot](./customer-support-copilot)
-- **Domain:** Support Ticket Triage, Grounded Draft Synthesis & Human-in-the-Loop Review.
-- **Key Features:**
-  - Automated ticket context extraction, sentiment analysis & priority tagging.
-  - Retrieval-grounded response generation from approved internal knowledge.
-  - Human review approval/edit mechanism before final message dispatch.
-  - Structured output schemas (Pydantic / JSON schema).
-  - Evaluation suite testing response helpfulness, safety, and edit ratios.
-- **Status:** **In Progress**
+## 🚀 Project 1: RAG Knowledge Assistant (Cambodia HR Compliance)
+
+### 📌 Problem Statement & Real-World Use Case
+HR personnel and legal compliance officers in Cambodia spend substantial administrative hours cross-referencing statutory labor requirements (working hours, overtime rates, maternity benefits, and bi-annual seniority pay). Errors risk labor disputes or compliance fines. This solution delivers an internal AI assistant grounded strictly in approved Cambodian labor regulations with 100% citation traceability.
+
+### 🌟 Key Technical Implementations
+- **Document Ingestion (FR-01):** Section-aware semantic chunking keeping statutory articles unified.
+- **Vector Search (FR-02):** Cosine distance semantic retrieval via local **ChromaDB**.
+- **Grounded Generation (FR-03):** Local inference via **LangChain + Ollama (`llama3.2`)** with temperature `0.0`. Strict boundary control ensures off-topic or unapproved queries return the exact fallback message: `"I cannot find this information in the approved policy documents."`
+- **Citation Tracking (FR-04):** Every statement links to the source markdown, section header, and cosine distance score.
+- **API & UI Delivery:** Production-grade **FastAPI** service (`/health`, `/retrieve`, `/query`) paired with an interactive dark-themed web chat interface.
+- **Verification Harness:** Automated 5-test assertion suite with 100% compliance.
+
+### 🧪 Verification Evidence
+- **Benchmark Evaluation:** 10-query test matrix documented in [`docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) demonstrating $\ge 95\%$ grounding and $0.0\%$ hallucination.
+- **Viva Defense Prep:** Comprehensive answers to all 7 handbook interview questions in [`docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md).
 
 ---
 
-### [Project 3: Document-to-Workflow Automation](./workflow-automation)
-- **Domain:** Action item extraction, routing, confidence validation & workflow dispatch.
-- **Status:** **Upcoming**
+## ⚡ Quickstart Guide (Running Project 1)
+
+### 1. Prerequisites
+- Python 3.10+
+- [Ollama](https://ollama.com/) running locally:
+  ```bash
+  ollama serve
+  ollama pull llama3.2
+  ```
+
+### 2. Setup Environment
+```bash
+git clone https://github.com/hailinaGit/generative-ai.git
+cd generative-ai
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r project-1-rag-assistant/requirements.txt
+```
+
+### 3. Run Ingestion & Test Suite
+```bash
+cd project-1-rag-assistant
+python src/ingest.py --reset
+python tests/test_rag.py
+```
+
+### 4. Launch the Web Service & UI
+```bash
+uvicorn src.api:app --reload --port 8000
+```
+- **Web UI:** Open [http://localhost:8000/](http://localhost:8000/) in your browser.
+- **Swagger API Docs:** Open [http://localhost:8000/docs](http://localhost:8000/docs).
 
 ---
 
 ## 🌿 Git Branch Organization
 
-Each project is developed on its own dedicated branch:
-- `main` — Consolidated master branch containing all reviewed projects.
-- `project-1/rag-assistant` — Dedicated branch for Project 1.
-- `project-2/support-copilot` — Active branch for Project 2 development.
-- `project-3/workflow-automation` — Upcoming branch for Project 3.
+This repository uses a structured branch workflow:
+- **`main`** — Production-ready master branch containing all reviewed projects and top-level documentation.
+- **`project-1/rag-assistant`** — Dedicated branch preserving the complete history and implementation of Project 1.
+- **`project-2/support-copilot`** — Active development branch for Project 2.
+- **`project-3/workflow-automation`** — Upcoming branch for the capstone project.
+
+---
+
+## 📄 Evaluation & Submission Mapping
+
+| Handbook Deliverable (Sec 11) | Project 1 Mapping | Status |
+| :--- | :--- | :---: |
+| Project Source Files | [`project-1-rag-assistant/src/`](./project-1-rag-assistant/src/) | ✅ |
+| Requirements & Research Doc | [`project-1-rag-assistant/docs/requirements.md`](./project-1-rag-assistant/docs/requirements.md) | ✅ |
+| Test / Validation Evidence | [`project-1-rag-assistant/docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) | ✅ |
+| README / Technical Guide | [`project-1-rag-assistant/README.md`](./project-1-rag-assistant/README.md) | ✅ |
+| Viva / Interview Prep | [`project-1-rag-assistant/docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md) | ✅ |
+| Version-Controlled Repository | GitHub: `hailinaGit/generative-ai` | ✅ |
