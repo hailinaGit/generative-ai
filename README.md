@@ -12,7 +12,7 @@ This repository contains the end-to-end deliverables, code, tests, and documenta
 
 ```text
 .
-├── generative-ai/                    # Project 1: RAG Knowledge Assistant (Completed)
+├── rag-knowledge-assistant/          # Project 1: RAG Knowledge Assistant (Completed)
 ├── customer-support-copilot/         # Project 2: AI Customer Support Copilot (In Progress)
 └── workflow-automation/              # Project 3: Document-to-Workflow Automation (Upcoming)
 ```
@@ -21,7 +21,7 @@ This repository contains the end-to-end deliverables, code, tests, and documenta
 
 ## 🚀 Projects Summary
 
-### [Project 1: RAG Knowledge Assistant (Cambodia HR Compliance)](./generative-ai)
+### [Project 1: RAG Knowledge Assistant (Cambodia HR Compliance)](./rag-knowledge-assistant)
 - **Domain:** Cambodian Labor Law & Internal Corporate HR Policies.
 - **Key Features:**
   - Semantic section chunking & local ChromaDB vector store.
