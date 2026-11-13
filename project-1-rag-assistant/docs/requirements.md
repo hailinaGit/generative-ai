@@ -1,5 +1,12 @@
 # Project Requirements & Scope Document: RAG Knowledge Assistant (Cambodia HR Compliance)
 
+**Project Type:** Foundation / Core Industry Task (Arrowstack 1-Month Generative AI Internship, Week 1)  
+**Project Folder:** `project-1-rag-assistant`  
+**Git Branch:** `project-1/rag-assistant`  
+**Author:** hailinaGit  
+
+---
+
 ## 1. Executive Summary & Business Use Case
 * **Project Name:** RAG Knowledge Assistant[cite: 3]
 * **Primary Stakeholder:** HR Personnel and Legal Compliance Officers in Cambodia[cite: 3]
