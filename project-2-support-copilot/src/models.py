@@ -94,3 +94,4 @@ class ReviewSubmission(BaseModel):
     final_reply: str = Field(..., description="Final text sent to customer (original or edited)")
     review_notes: Optional[str] = Field(default=None, description="Optional agent feedback or audit notes")
     reviewed_at: Optional[str] = Field(default_factory=lambda: datetime.utcnow().isoformat())
+

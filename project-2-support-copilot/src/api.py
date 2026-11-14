@@ -11,6 +11,7 @@ Endpoints:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any, Optional
 
@@ -18,22 +19,20 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
-try:
-    from src.copilot import SupportCopilotEngine
-    from src.models import (
-        CopilotDraftResponse,
-        CustomerTicket,
-        ReviewStatusEnum,
-        ReviewSubmission,
-    )
-except ModuleNotFoundError:
-    from copilot import SupportCopilotEngine  # type: ignore
-    from models import (  # type: ignore
-        CopilotDraftResponse,
-        CustomerTicket,
-        ReviewStatusEnum,
-        ReviewSubmission,
-    )
+# Ensure project root and src are in python search path
+SRC_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SRC_DIR.parent
+for p in (str(SRC_DIR), str(PROJECT_DIR)):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from copilot import SupportCopilotEngine
+from models import (
+    CopilotDraftResponse,
+    CustomerTicket,
+    ReviewStatusEnum,
+    ReviewSubmission,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -131,3 +130,4 @@ def get_audit_trail():
         "total_dispatched": len(audit_log),
         "audit_records": audit_log,
     }
+

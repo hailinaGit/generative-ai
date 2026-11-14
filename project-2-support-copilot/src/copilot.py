@@ -11,32 +11,29 @@ from __future__ import annotations
 import json
 import logging
 import re
+import sys
 from pathlib import Path
 from typing import Any, Optional
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
-try:
-    from src.models import (
-        CategoryEnum,
-        CopilotDraftResponse,
-        CustomerTicket,
-        PolicyCitation,
-        SentimentEnum,
-        TriageClassification,
-        UrgencyEnum,
-    )
-except ModuleNotFoundError:
-    from models import (  # type: ignore
-        CategoryEnum,
-        CopilotDraftResponse,
-        CustomerTicket,
-        PolicyCitation,
-        SentimentEnum,
-        TriageClassification,
-        UrgencyEnum,
-    )
+# Ensure project root and src are in python search path
+SRC_DIR = Path(__file__).resolve().parent
+PROJECT_DIR = SRC_DIR.parent
+for p in (str(SRC_DIR), str(PROJECT_DIR)):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from models import (
+    CategoryEnum,
+    CopilotDraftResponse,
+    CustomerTicket,
+    PolicyCitation,
+    SentimentEnum,
+    TriageClassification,
+    UrgencyEnum,
+)
 
 logger = logging.getLogger("support_copilot")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -298,3 +295,4 @@ if __name__ == "__main__":
     print(draft_res.draft_reply)
     print("\n--- INTERNAL NOTES ---")
     print(draft_res.internal_notes)
+
