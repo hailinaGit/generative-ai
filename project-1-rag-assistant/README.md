@@ -19,7 +19,7 @@ An internal Retrieval-Augmented Generation (RAG) assistant designed for HR offic
 ## Repository Structure
 
 ```text
-rag-knowledge-assistant/
+project-1-rag-assistant/
 ├── data/
 │   ├── raw/
 │   │   └── cambodia_hr_regulations.md  # Ground truth Cambodian policy doc
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 ### 3. Step 1: Document Ingestion (Phase 2)
 Ingest and chunk the Cambodian labor documents into ChromaDB:
 ```bash
-cd rag-knowledge-assistant
+cd project-1-rag-assistant
 python src/ingest.py --reset
 ```
 *Output: `Ingested 1 files -> 5 chunks (collection total: 5)`*
