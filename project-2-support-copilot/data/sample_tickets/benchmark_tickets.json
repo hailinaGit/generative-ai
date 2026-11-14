@@ -1,0 +1,81 @@
+[
+  {
+    "ticket_id": "TCK-101",
+    "customer_name": "Sarah Jenkins",
+    "customer_tier": "Pro",
+    "subject": "Double charged for monthly subscription",
+    "message": "Hi, I just looked at my credit card statement and I was billed twice for this month's Pro plan ($49.00 each on Nov 10th). Please refund the extra charge immediately!",
+    "ground_truth": {
+      "sentiment": "Frustrated",
+      "category": "Billing",
+      "urgency": "High",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-102",
+    "customer_name": "Michael Chang",
+    "customer_tier": "Enterprise",
+    "subject": "Lost phone and locked out of 2FA",
+    "message": "Hello support, I dropped my phone in water yesterday and can't receive my 2FA authentication codes to log into our corporate dashboard. How can I regain access?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Account Security",
+      "urgency": "High",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-103",
+    "customer_name": "David Ross",
+    "customer_tier": "Free",
+    "subject": "Order #4892 package is 8 days late and no tracking update",
+    "message": "I ordered a physical sensor kit 12 days ago with standard shipping. Tracking hasn't updated in 9 days and it never arrived. I need this package or my money back!",
+    "ground_truth": {
+      "sentiment": "Angry",
+      "category": "Shipping & Delivery",
+      "urgency": "High",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-104",
+    "customer_name": "Elena Rostova",
+    "customer_tier": "Enterprise",
+    "subject": "Demand immediate refund of $850 or filing legal dispute",
+    "message": "Your enterprise software crashed during our live product launch. We demand an immediate full refund of $850.00 today or our legal department will initiate a chargeback and lawsuit by end of day.",
+    "ground_truth": {
+      "sentiment": "Angry",
+      "category": "Billing",
+      "urgency": "Critical",
+      "escalate": true
+    }
+  },
+  {
+    "ticket_id": "TCK-105",
+    "customer_name": "Liam Scott",
+    "customer_tier": "Standard",
+    "subject": "How to cancel my subscription?",
+    "message": "Hi, I am moving to another company and won't need my subscription anymore. Where can I cancel it, and will my data still be there if I come back later?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Cancellation",
+      "urgency": "Low",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-106",
+    "customer_name": "Karen Vance",
+    "customer_tier": "Pro",
+    "subject": "Can your software help me trade cryptocurrency?",
+    "message": "Hey team, does your copilot support automated Bitcoin trading strategies or provide daily crypto buy signals?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Technical Support",
+      "urgency": "Low",
+      "escalate": false,
+      "out_of_scope": true
+    }
+  }
+]
