@@ -47,6 +47,10 @@ LEGAL_DISPUTE_PATTERN = re.compile(
     r"\b(lawyer|lawsuit|legal department|attorney|court|litigation|chargeback|subpoena)\b",
     re.IGNORECASE,
 )
+SECURITY_BREACH_PATTERN = re.compile(
+    r"\b(unauthorized logins?|suspicious logins?|hacked|account breach|unknown ip)\b",
+    re.IGNORECASE,
+)
 CURRENCY_AMOUNT_PATTERN = re.compile(r"\$\s?(\d+(?:\.\d{1,2})?)")
 REFUND_SUPERVISOR_THRESHOLD = 100.00
 
@@ -128,9 +132,21 @@ Analyze the inbound ticket text and return a STRICT JSON object with these exact
 }}
 
 Rules:
-1. If the customer mentions legal action, chargebacks, or lawsuits, set escalate_to_human=true and urgency="Critical".
-2. If the customer demands refunds over $100, set escalate_to_human=true.
-3. Output ONLY the raw valid JSON string. Do not wrap in markdown or commentary.
+1. Escalation (escalate_to_human):
+   - Set escalate_to_human=true ONLY IF:
+     (a) The customer threatens legal action, lawsuits, or bank chargebacks, OR
+     (b) The customer demands a refund strictly greater than $100, OR
+     (c) The customer reports an active unauthorized account hack / unknown IP login breach.
+   - For ALL other tickets (routine refunds <= $100, lost 2FA phone, late/damaged shipping, cancellations, API/webhook errors, invoice updates, out-of-scope questions), you MUST set escalate_to_human=false and escalation_reason=null.
+2. Category:
+   - Refunds, double charges, invoices, and payment disputes -> "Billing".
+   - Out-of-scope / unrelated topics (e.g. cryptocurrency trading) -> "Other / Uncategorized".
+3. Urgency:
+   - Legal threats, active security breaches -> "Critical".
+   - Production outages, double charges, lost packages, 2FA lockouts -> "High".
+   - Damaged non-critical items -> "Medium".
+   - Routine cancellations, invoice edits, general questions -> "Low".
+4. Output ONLY the raw valid JSON string. Do not wrap in markdown or commentary.
 """
 
 DRAFT_SYSTEM_PROMPT = """You are an empathetic, professional Senior Customer Support Specialist.
@@ -167,9 +183,12 @@ class SupportCopilotEngine:
         self.llm = ChatOllama(model=model_name, temperature=temperature)
 
     def _check_deterministic_escalation(self, text: str) -> tuple[bool, Optional[str]]:
-        """Deterministic safety layer detecting legal threats and >$100 refund requests."""
+        """Deterministic safety layer detecting legal threats, security breaches, and >$100 refund requests."""
         if LEGAL_DISPUTE_PATTERN.search(text):
             return True, "Triggered legal dispute or chargeback safety rule."
+
+        if SECURITY_BREACH_PATTERN.search(text):
+            return True, "Triggered compromised account / unauthorized login security rule."
 
         amounts = [float(a) for a in CURRENCY_AMOUNT_PATTERN.findall(text)]
         if any(amt > REFUND_SUPERVISOR_THRESHOLD for amt in amounts):
@@ -181,7 +200,7 @@ class SupportCopilotEngine:
         """Classify sentiment, category, urgency, and human escalation need."""
         full_ticket_text = f"Subject: {ticket.subject}\nCustomer: {ticket.customer_name} ({ticket.customer_tier} tier)\nMessage: {ticket.message}"
 
-        # 1. Deterministic safety check
+        # 1. Deterministic safety check (authoritative policy guardrail)
         deterministic_escalate, deterministic_reason = self._check_deterministic_escalation(full_ticket_text)
 
         prompt = ChatPromptTemplate.from_messages([
@@ -200,11 +219,11 @@ class SupportCopilotEngine:
 
             parsed = json.loads(raw_content)
 
-            # Enforce deterministic override if triggered
-            if deterministic_escalate:
-                parsed["escalate_to_human"] = True
+            # Enforce deterministic policy escalation (prevents both missed escalations and false positives)
+            parsed["escalate_to_human"] = deterministic_escalate
+            parsed["escalation_reason"] = deterministic_reason
+            if LEGAL_DISPUTE_PATTERN.search(full_ticket_text) or SECURITY_BREACH_PATTERN.search(full_ticket_text):
                 parsed["urgency"] = "Critical"
-                parsed["escalation_reason"] = deterministic_reason
 
             return TriageClassification(
                 sentiment=SentimentEnum(parsed.get("sentiment", "Neutral")),
