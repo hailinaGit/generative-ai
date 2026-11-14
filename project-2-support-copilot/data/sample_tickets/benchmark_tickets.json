@@ -72,10 +72,88 @@
     "message": "Hey team, does your copilot support automated Bitcoin trading strategies or provide daily crypto buy signals?",
     "ground_truth": {
       "sentiment": "Neutral",
-      "category": "Technical Support",
+      "category": "Other / Uncategorized",
       "urgency": "Low",
       "escalate": false,
       "out_of_scope": true
+    }
+  },
+  {
+    "ticket_id": "TCK-107",
+    "customer_name": "Marcus Aurelius Vance",
+    "customer_tier": "Enterprise",
+    "subject": "CRITICAL: Suspicious logins from unknown IP in Russia",
+    "message": "We just received 4 automated email alerts showing unauthorized logins to our admin account from Moscow. We did not authorize this! We need all active user sessions terminated and our API keys revoked immediately.",
+    "ground_truth": {
+      "sentiment": "Frustrated",
+      "category": "Account Security",
+      "urgency": "Critical",
+      "escalate": true
+    }
+  },
+  {
+    "ticket_id": "TCK-108",
+    "customer_name": "Chloe Dubois",
+    "customer_tier": "Standard",
+    "subject": "Delivered box arrived crushed with damaged hardware inside",
+    "message": "Package for order #9021 arrived today via courier, but the cardboard box was completely crushed and the device screen is cracked into pieces. I have taken photos. Can I get a replacement sent out?",
+    "ground_truth": {
+      "sentiment": "Frustrated",
+      "category": "Shipping & Delivery",
+      "urgency": "Medium",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-109",
+    "customer_name": "Jonathan Reed",
+    "customer_tier": "Pro",
+    "subject": "Accidental annual renewal charge of $240 (forgot to cancel trial)",
+    "message": "I was automatically charged $240.00 yesterday for an annual Pro renewal. I intended to cancel my trial before it ended because my project concluded. Can you please cancel the plan and refund the $240 charge?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Billing",
+      "urgency": "High",
+      "escalate": true
+    }
+  },
+  {
+    "ticket_id": "TCK-110",
+    "customer_name": "Samantha Miller",
+    "customer_tier": "Free",
+    "subject": "Where do I export my company data before closing my account?",
+    "message": "Good morning, we are shutting down our test workspace. Before we delete the account, can you direct me to where I can export all our customer profiles and team records in CSV format?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Cancellation",
+      "urgency": "Low",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-111",
+    "customer_name": "Alex Mercer",
+    "customer_tier": "Enterprise",
+    "subject": "Webhooks returning 504 Gateway Timeout on production endpoints",
+    "message": "Our data synchronization pipeline started failing approximately 45 minutes ago with HTTP 504 Gateway Timeout errors when posting to your /v2/events endpoint. We have over 2,000 queued events backlogged. Is there an active incident on US-East?",
+    "ground_truth": {
+      "sentiment": "Frustrated",
+      "category": "Technical Support",
+      "urgency": "High",
+      "escalate": false
+    }
+  },
+  {
+    "ticket_id": "TCK-112",
+    "customer_name": "Robert O'Connor",
+    "customer_tier": "Standard",
+    "subject": "Need invoice with company Tax ID / VAT number updated",
+    "message": "Hello, I received invoice #INV-7731 for $79.00 last week, but our finance department noticed our official VAT number is missing from the PDF header. Could you regenerate the invoice with Tax ID: IE6388411V?",
+    "ground_truth": {
+      "sentiment": "Neutral",
+      "category": "Billing",
+      "urgency": "Low",
+      "escalate": false
     }
   }
 ]
