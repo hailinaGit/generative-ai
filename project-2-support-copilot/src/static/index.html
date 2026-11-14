@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Customer Support Copilot — Agent Review Desk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1329;
+      --card-bg: #16203a;
+      --card-border: #27355b;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --purple: #8b5cf6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: #111a36;
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .brand span {
+      font-size: 12px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+
+    .system-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      flex: 1;
+      height: calc(100vh - 65px);
+    }
+
+    /* Left Sidebar: Ticket Queue */
+    .ticket-sidebar {
+      background: #111a36;
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ticket-list {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .ticket-item {
+      padding: 16px;
+      border-bottom: 1px solid var(--card-border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .ticket-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .ticket-item.active {
+      background: rgba(59, 130, 246, 0.1);
+      border-left: 3px solid var(--accent);
+    }
+
+    .ticket-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .ticket-id {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .ticket-tier {
+      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #1e293b;
+      color: #cbd5e1;
+    }
+
+    .ticket-subject {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: var(--text-main);
+    }
+
+    .ticket-snippet {
+      font-size: 12px;
+      color: var(--text-muted);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    /* Right Main Panel */
+    .main-panel {
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    /* Ticket Details Bar */
+    .ticket-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .meta-box h5 {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .meta-box p {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Triage Tags */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-frustrated { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-angry { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-neutral { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .badge-critical { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid var(--danger); animation: pulse 1.5s infinite; }
+    .badge-high { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid var(--warning); }
+    .badge-low { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* Escalation Banner */
+    .escalation-banner {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid var(--danger);
+      border-radius: 8px;
+      padding: 12px 16px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      color: #fca5a5;
+      font-size: 13px;
+    }
+
+    .escalation-banner svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--danger);
+      fill: none;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    /* Live Draft Editor */
+    .editor-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .editor-header h3 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .hitl-tag {
+      font-size: 11px;
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--purple);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    textarea {
+      width: 100%;
+      background: #0b1329;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 200px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--accent);
+    }
+
+    /* Internal Notes & Citations */
+    .notes-box {
+      background: #0f172a;
+      border: 1px dashed var(--card-border);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    /* Action Footer */
+    .action-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      transition: all 0.2s;
+    }
+
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .btn-approve {
+      background: var(--success);
+      color: #fff;
+    }
+    .btn-approve:hover { background: #059669; }
+
+    .btn-escalate {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .btn-escalate:hover { background: var(--danger); color: #fff; }
+
+    .btn-generate {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-generate:hover { background: var(--accent-hover); }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Loader */
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 40px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <h1>AI Customer Support Copilot</h1>
+      <span>Human-in-the-Loop Review Desk</span>
+    </div>
+    <div class="system-status" id="healthStatus">
+      <span class="status-dot"></span> Checking Copilot status...
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left Ticket Queue -->
+    <div class="ticket-sidebar">
+      <div class="sidebar-header">
+        <span>Incoming Tickets (<span id="ticketCount">0</span>)</span>
+        <button style="background:none; border:none; color:var(--accent); font-size:12px; cursor:pointer;" onclick="loadTickets()">Refresh</button>
+      </div>
+      <div class="ticket-list" id="ticketList"></div>
+    </div>
+
+    <!-- Right Main Workspace -->
+    <div class="main-panel">
+      <!-- Active Ticket Card -->
+      <div class="card" id="activeTicketCard">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <h2 id="activeSubject" style="font-size:18px; margin-bottom:6px;">Select a ticket from the queue</h2>
+            <p id="activeCustomer" style="color:var(--text-muted); font-size:13px;"></p>
+          </div>
+          <button class="btn btn-generate" id="runCopilotBtn" onclick="runCopilot()" disabled>
+            <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Generate AI Draft
+          </button>
+        </div>
+
+        <div style="background:#0b1329; border:1px solid var(--card-border); padding:16px; border-radius:8px; margin-top:16px;">
+          <h5 style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">Customer Inbound Message:</h5>
+          <p id="activeMessage" style="font-size:14px; line-height:1.6; color:#cbd5e1;"></p>
+        </div>
+
+        <div class="ticket-meta-grid">
+          <div class="meta-box">
+            <h5>Sentiment</h5>
+            <span id="badgeSentiment" class="badge badge-neutral">—</span>
+          </div>
+          <div class="meta-box">
+            <h5>Category</h5>
+            <p id="triageCategory">—</p>
+          </div>
+          <div class="meta-box">
+            <h5>Urgency Level</h5>
+            <span id="badgeUrgency" class="badge badge-neutral">—</span>
+          </div>
+          <div class="meta-box">
+            <h5>Supervisor Sign-off</h5>
+            <p id="triageEscalate" style="color:var(--text-muted);">Not Required</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Escalation Warning Banner -->
+      <div class="escalation-banner" id="escalationBanner">
+        <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <div>
+          <strong>MANDATORY HUMAN SUPERVISOR ESCALATION</strong>
+          <p id="escalationReason" style="font-size:12px; margin-top:2px;"></p>
+        </div>
+      </div>
+
+      <!-- Spinner Loader -->
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div>Triage classification & grounded policy synthesis in progress...</div>
+      </div>
+
+      <!-- Human-in-the-Loop Review & Editor -->
+      <div class="card" id="editorCard" style="display:none;">
+        <div class="editor-section">
+          <div class="editor-header">
+            <h3>Human-in-the-Loop Review Desk</h3>
+            <span class="hitl-tag">Editable AI Draft</span>
+          </div>
+          <p style="font-size:12px; color:var(--text-muted);">
+            Review the drafted reply below. You can edit the text directly before approving.
+          </p>
+          <textarea id="draftTextarea"></textarea>
+          
+          <div class="notes-box">
+            <strong>Internal Copilot Notes:</strong> <span id="internalNotes">—</span>
+            <div id="citationsContainer" style="margin-top:6px;"></div>
+          </div>
+        </div>
+
+        <div class="action-bar">
+          <button class="btn btn-escalate" onclick="submitReview('Escalated to Supervisor')">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Escalate to Supervisor
+          </button>
+          <button class="btn btn-approve" onclick="submitReview('Approved')">
+            <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Approve & Dispatch Reply
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let tickets = [];
+    let currentTicket = null;
+    let originalDraft = "";
+
+    async function checkHealth() {
+      try {
+        const res = await fetch('/health');
+        if (res.ok) {
+          const d = await res.json();
+          document.getElementById('healthStatus').innerHTML = `
+            <span class="status-dot"></span> Model: ${d.model} &bull; ${d.policy_sections_loaded} policy sections loaded
+          `;
+        }
+      } catch (e) {
+        document.getElementById('healthStatus').innerHTML = `
+          <span class="status-dot" style="background:#ef4444"></span> Copilot offline
+        `;
+      }
+    }
+
+    async function loadTickets() {
+      try {
+        const res = await fetch('/api/tickets');
+        tickets = await res.json();
+        document.getElementById('ticketCount').innerText = tickets.length;
+        renderTicketList();
+        if (tickets.length > 0) {
+          selectTicket(tickets[0]);
+        }
+      } catch (err) {
+        alert("Failed to load ticket queue: " + err.message);
+      }
+    }
+
+    function renderTicketList() {
+      const container = document.getElementById('ticketList');
+      container.innerHTML = '';
+      tickets.forEach((t) => {
+        const item = document.createElement('div');
+        item.className = 'ticket-item' + (currentTicket && currentTicket.ticket_id === t.ticket_id ? ' active' : '');
+        item.onclick = () => selectTicket(t);
+        item.innerHTML = `
+          <div class="ticket-item-top">
+            <span class="ticket-id">${t.ticket_id}</span>
+            <span class="ticket-tier">${t.customer_tier}</span>
+          </div>
+          <div class="ticket-subject">${t.subject}</div>
+          <div class="ticket-snippet">${t.message}</div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function selectTicket(t) {
+      currentTicket = t;
+      renderTicketList();
+      document.getElementById('activeSubject').innerText = t.subject;
+      document.getElementById('activeCustomer').innerText = `From: ${t.customer_name} &bull; Subscription Tier: ${t.customer_tier}`;
+      document.getElementById('activeMessage').innerText = t.message;
+      document.getElementById('runCopilotBtn').disabled = false;
+
+      // Reset triage fields
+      document.getElementById('badgeSentiment').innerText = "—";
+      document.getElementById('badgeSentiment').className = "badge badge-neutral";
+      document.getElementById('triageCategory').innerText = "—";
+      document.getElementById('badgeUrgency').innerText = "—";
+      document.getElementById('badgeUrgency').className = "badge badge-neutral";
+      document.getElementById('triageEscalate').innerText = "Not Required";
+      document.getElementById('triageEscalate').style.color = "var(--text-muted)";
+      document.getElementById('escalationBanner').style.display = "none";
+      document.getElementById('editorCard').style.display = "none";
+    }
+
+    async function runCopilot() {
+      if (!currentTicket) return;
+      const loader = document.getElementById('loader');
+      const editorCard = document.getElementById('editorCard');
+      const btn = document.getElementById('runCopilotBtn');
+
+      btn.disabled = true;
+      loader.style.display = 'block';
+      editorCard.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/copilot/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(currentTicket)
+        });
+        const data = await res.json();
+
+        // Update Triage Badges
+        const sBadge = document.getElementById('badgeSentiment');
+        sBadge.innerText = data.triage.sentiment;
+        sBadge.className = 'badge ' + (
+          data.triage.sentiment === 'Frustrated' ? 'badge-frustrated' :
+          data.triage.sentiment === 'Angry' ? 'badge-angry' : 'badge-neutral'
+        );
+
+        document.getElementById('triageCategory').innerText = data.triage.category;
+
+        const uBadge = document.getElementById('badgeUrgency');
+        uBadge.innerText = data.triage.urgency;
+        uBadge.className = 'badge ' + (
+          data.triage.urgency === 'Critical' ? 'badge-critical' :
+          data.triage.urgency === 'High' ? 'badge-high' : 'badge-low'
+        );
+
+        // Escalation Banner
+        if (data.triage.escalate_to_human) {
+          document.getElementById('triageEscalate').innerText = "YES (Required)";
+          document.getElementById('triageEscalate').style.color = "var(--danger)";
+          document.getElementById('escalationReason').innerText = data.triage.escalation_reason || "Legal dispute or excessive refund amount detected.";
+          document.getElementById('escalationBanner').style.display = 'flex';
+        } else {
+          document.getElementById('triageEscalate').innerText = "Standard Routing";
+          document.getElementById('triageEscalate').style.color = "var(--success)";
+          document.getElementById('escalationBanner').style.display = 'none';
+        }
+
+        // Fill Editor
+        originalDraft = data.draft_reply;
+        document.getElementById('draftTextarea').value = data.draft_reply;
+        document.getElementById('internalNotes').innerText = data.internal_notes;
+
+        // Render Citations
+        const citContainer = document.getElementById('citationsContainer');
+        citContainer.innerHTML = '';
+        if (data.citations && data.citations.length > 0) {
+          data.citations.forEach((c) => {
+            const tag = document.createElement('span');
+            tag.style.cssText = 'display:inline-block; font-size:11px; background:#1e293b; color:#93c5fd; padding:2px 8px; border-radius:4px; margin-right:6px; margin-top:4px;';
+            tag.innerText = `📄 ${c.section}: ${c.rule_applied}`;
+            citContainer.appendChild(tag);
+          });
+        }
+
+        editorCard.style.display = 'block';
+      } catch (err) {
+        alert("Copilot inference failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        loader.style.display = 'none';
+      }
+    }
+
+    async function submitReview(type) {
+      if (!currentTicket) return;
+      const currentText = document.getElementById('draftTextarea').value;
+      const action = type === 'Escalated to Supervisor'
+        ? 'Escalated to Supervisor'
+        : (currentText.trim() === originalDraft.trim() ? 'Approved (As-Is)' : 'Approved (Edited)');
+
+      try {
+        const res = await fetch('/api/review/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ticket_id: currentTicket.ticket_id,
+            reviewer_name: "Agent_01",
+            action: action,
+            final_reply: currentText,
+            review_notes: `Action taken via HITL review desk: ${action}`
+          })
+        });
+        const out = await res.json();
+        alert(`✓ Success! Ticket ${currentTicket.ticket_id} has been marked as "${action}" and dispatched!`);
+      } catch (err) {
+        alert("Failed to submit review: " + err.message);
+      }
+    }
+
+    // Initialize
+    checkHealth();
+    loadTickets();
+  </script>
+</body>
+</html>
