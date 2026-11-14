@@ -7,6 +7,7 @@ Embeddings use Chroma's default local model (all-MiniLM-L6-v2), so no API key
 is needed. Collection uses cosine distance (FR-02).
 """
 import argparse
+import contextlib
 import hashlib
 import re
 from pathlib import Path
@@ -93,10 +94,8 @@ def main() -> None:
 
     client = chromadb.PersistentClient(path=args.db_dir)
     if args.reset:
-        try:
+        with contextlib.suppress(Exception):
             client.delete_collection(COLLECTION)
-        except Exception:
-            pass
     col = client.get_or_create_collection(COLLECTION, metadata={"hnsw:space": "cosine"})
     col.upsert(ids=ids, documents=docs, metadatas=metas)
     print(f"Ingested {len(files)} files -> {len(docs)} chunks (collection total: {col.count()})")

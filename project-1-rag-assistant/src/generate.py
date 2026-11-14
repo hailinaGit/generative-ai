@@ -19,9 +19,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
 
 try:
-    from src.retrieve import retrieve_relevant_chunks
+    from src.retrieve import DEFAULT_DB_DIR, retrieve_relevant_chunks
 except ModuleNotFoundError:
-    from retrieve import retrieve_relevant_chunks
+    from retrieve import DEFAULT_DB_DIR, retrieve_relevant_chunks
 
 # Strict RAG system prompt enforcing grounding & citations (FR-03, FR-04)
 RAG_SYSTEM_PROMPT = """You are a specialized HR Compliance Assistant for Cambodian Labor Law and internal regulations.
@@ -60,7 +60,7 @@ def generate_answer(
     model_name: str = "llama3.2",
     top_k: int = 3,
     temperature: float = 0.0,
-    db_dir: str = "chroma_db",
+    db_dir: str = DEFAULT_DB_DIR,
 ) -> dict[str, Any]:
     """Retrieve chunks and synthesize a grounded answer using a local LangChain LLM."""
     chunks = retrieve_relevant_chunks(query=query, top_k=top_k, db_dir=db_dir)

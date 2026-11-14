@@ -13,11 +13,11 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # Ensure project root and src are in python search path
 SRC_DIR = Path(__file__).resolve().parent
@@ -73,7 +73,7 @@ def health_check():
     return HealthResponse(
         status="healthy",
         model=copilot_engine.model_name,
-        policy_sections_loaded=len(copilot_engine.kb._sections),
+        policy_sections_loaded=copilot_engine.kb.section_count,
         total_reviews_logged=len(audit_log),
     )
 

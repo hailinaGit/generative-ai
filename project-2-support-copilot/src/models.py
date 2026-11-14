@@ -6,7 +6,7 @@ Defines strict validated schemas for:
 - AI Grounded Draft responses with policy citations
 - Human-in-the-Loop (HITL) review states and audit logs
 """
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -51,7 +51,7 @@ class CustomerTicket(BaseModel):
     subject: str = Field(..., description="Ticket subject line")
     message: str = Field(..., description="Full customer inquiry body")
     status: ReviewStatusEnum = Field(default=ReviewStatusEnum.PENDING, description="Review/Resolution state")
-    created_at: Optional[str] = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: Optional[str] = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 # --- Triage Classification Schema ---
@@ -94,5 +94,5 @@ class ReviewSubmission(BaseModel):
     action: ReviewStatusEnum = Field(..., description="Approval decision")
     final_reply: str = Field(..., description="Final text sent to customer (original or edited)")
     review_notes: Optional[str] = Field(default=None, description="Optional agent feedback or audit notes")
-    reviewed_at: Optional[str] = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    reviewed_at: Optional[str] = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 

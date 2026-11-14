@@ -12,7 +12,7 @@ from typing import Any
 import chromadb
 
 COLLECTION_NAME = "policies"
-DEFAULT_DB_DIR = "chroma_db"
+DEFAULT_DB_DIR = str(Path(__file__).resolve().parent.parent / "chroma_db")
 
 
 def get_collection(db_dir: str = DEFAULT_DB_DIR):
@@ -60,23 +60,6 @@ def retrieve_relevant_chunks(
         })
 
     return chunks
-
-
-def format_context_for_prompt(chunks: list[dict[str, Any]]) -> str:
-    """Format retrieved chunks into a prompt-ready context string with citations."""
-    if not chunks:
-        return "No relevant context found."
-
-    context_blocks = []
-    for i, c in enumerate(chunks, 1):
-        block = (
-            f"--- Context Block {i} ---\n"
-            f"Source Document: {c['source']}\n"
-            f"Section: {c['section']}\n"
-            f"Content:\n{c['content']}\n"
-        )
-        context_blocks.append(block)
-    return "\n".join(context_blocks)
 
 
 def main():

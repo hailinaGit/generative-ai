@@ -12,8 +12,9 @@ import json
 import logging
 import re
 import sys
+from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional, TypeVar
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama
@@ -36,7 +37,20 @@ from models import (
 )
 
 logger = logging.getLogger("support_copilot")
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+if not logging.getLogger().handlers:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+
+E = TypeVar("E", bound=Enum)
+
+
+def _safe_enum(enum_cls: type[E], value: object, default: E) -> E:
+    """Parse an Enum value safely, falling back to default on unrecognized LLM output."""
+    if not isinstance(value, str):
+        return default
+    try:
+        return enum_cls(value.strip())
+    except ValueError:
+        return default
 
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -62,6 +76,11 @@ class PolicyKnowledgeBase:
         self.policy_path = policy_path
         self._sections: dict[str, str] = {}
         self._load_policies()
+
+    @property
+    def section_count(self) -> int:
+        """Number of loaded policy sections."""
+        return len(self._sections)
 
     def _load_policies(self) -> None:
         if not self.policy_path.exists():
@@ -214,8 +233,7 @@ class SupportCopilotEngine:
             raw_content = str(res.content).strip()
             # Clean markdown code blocks if returned
             if raw_content.startswith("```"):
-                raw_content = re.sub(r"^```(?:json)?\s*", "", raw_content)
-                raw_content = re.sub(r"\s*```$", "", raw_content)
+                raw_content = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_content)
 
             parsed = json.loads(raw_content)
 
@@ -226,10 +244,10 @@ class SupportCopilotEngine:
                 parsed["urgency"] = "Critical"
 
             return TriageClassification(
-                sentiment=SentimentEnum(parsed.get("sentiment", "Neutral")),
-                category=CategoryEnum(parsed.get("category", "Other / Uncategorized")),
-                urgency=UrgencyEnum(parsed.get("urgency", "Medium")),
-                key_issues=parsed.get("key_issues", [ticket.subject]),
+                sentiment=_safe_enum(SentimentEnum, parsed.get("sentiment"), SentimentEnum.NEUTRAL),
+                category=_safe_enum(CategoryEnum, parsed.get("category"), CategoryEnum.OTHER),
+                urgency=_safe_enum(UrgencyEnum, parsed.get("urgency"), UrgencyEnum.MEDIUM),
+                key_issues=parsed.get("key_issues") or [ticket.subject],
                 escalate_to_human=bool(parsed.get("escalate_to_human", False)),
                 escalation_reason=parsed.get("escalation_reason"),
             )

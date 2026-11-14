@@ -9,7 +9,6 @@ Run:
     uvicorn src.api:app --reload --port 8000
 """
 from pathlib import Path
-from typing import Any, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
