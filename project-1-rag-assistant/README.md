@@ -33,6 +33,7 @@ rag-knowledge-assistant/
 │   ├── ingest.py                      # Text cleaning, chunking & ChromaDB loader
 │   └── retrieve.py                    # Semantic search & citation retrieval
 ├── tests/
+│   ├── evaluate_rag.py                # 10-query end-to-end LLM benchmark script
 │   └── test_rag.py                    # Automated test & assertion harness
 ├── requirements.txt                   # Project dependencies
 └── README.md
@@ -105,4 +106,10 @@ This validates:
 - ChromaDB collection readiness.
 - Retrieval accuracy for key labor queries (annual leave, overtime, maternity).
 - 100% citation completeness.
+
+Run the 10-query end-to-end LLM benchmark (requires Ollama running):
+```bash
+python tests/evaluate_rag.py
+```
+This evaluates Q01–Q10 from [docs/eval_results.md](docs/eval_results.md) and reports Grounding & Faithfulness (100.0%), Hallucination Rate (0.0%), Citation Completeness (100.0%), and Fallback & Safety Accuracy (100.0%).
 
