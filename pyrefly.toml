@@ -1,0 +1,7 @@
+search-path = [
+    "project-1-rag-assistant/src",
+    "project-1-rag-assistant",
+    "project-2-support-copilot/src",
+    "project-2-support-copilot"
+]
+
