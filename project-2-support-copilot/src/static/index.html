@@ -138,6 +138,40 @@
       margin-bottom: 6px;
     }
 
+    .ticket-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-pending {
+      background: #1e293b;
+      color: #94a3b8;
+      border: 1px solid #334155;
+    }
+
+    .status-escalated {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-approved {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
     .ticket-id {
       font-size: 12px;
       font-weight: 600;
@@ -543,10 +577,25 @@
         const item = document.createElement('div');
         item.className = 'ticket-item' + (currentTicket && currentTicket.ticket_id === t.ticket_id ? ' active' : '');
         item.onclick = () => selectTicket(t);
+
+        // Map status style
+        let statusClass = 'status-pending';
+        let statusLabel = t.status || 'Pending';
+        if (statusLabel.includes('Escalate')) {
+          statusClass = 'status-escalated';
+          statusLabel = 'Escalated';
+        } else if (statusLabel.includes('Approv')) {
+          statusClass = 'status-approved';
+          statusLabel = 'Approved';
+        }
+
         item.innerHTML = `
           <div class="ticket-item-top">
             <span class="ticket-id">${t.ticket_id}</span>
-            <span class="ticket-tier">${t.customer_tier}</span>
+            <div class="ticket-badges">
+              <span class="status-pill ${statusClass}">${statusLabel}</span>
+              <span class="ticket-tier">${t.customer_tier}</span>
+            </div>
           </div>
           <div class="ticket-subject">${t.subject}</div>
           <div class="ticket-snippet">${t.message}</div>
@@ -616,6 +665,10 @@
           document.getElementById('triageEscalate').style.color = "var(--danger)";
           document.getElementById('escalationReason').innerText = data.triage.escalation_reason || "Legal dispute or excessive refund amount detected.";
           document.getElementById('escalationBanner').style.display = 'flex';
+          
+          // Update in-memory ticket status to Escalated immediately
+          currentTicket.status = "Escalated to Supervisor";
+          renderTicketList();
         } else {
           document.getElementById('triageEscalate').innerText = "Standard Routing";
           document.getElementById('triageEscalate').style.color = "var(--success)";
@@ -668,6 +721,8 @@
           })
         });
         const out = await res.json();
+        currentTicket.status = action;
+        renderTicketList();
         alert(`✓ Success! Ticket ${currentTicket.ticket_id} has been marked as "${action}" and dispatched!`);
       } catch (err) {
         alert("Failed to submit review: " + err.message);

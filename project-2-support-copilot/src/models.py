@@ -50,6 +50,7 @@ class CustomerTicket(BaseModel):
     customer_tier: str = Field(default="Standard", description="Customer subscription tier (Free, Pro, Enterprise)")
     subject: str = Field(..., description="Ticket subject line")
     message: str = Field(..., description="Full customer inquiry body")
+    status: ReviewStatusEnum = Field(default=ReviewStatusEnum.PENDING, description="Review/Resolution state")
     created_at: Optional[str] = Field(default_factory=lambda: datetime.utcnow().isoformat())
 
 

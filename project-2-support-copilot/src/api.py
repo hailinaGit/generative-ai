@@ -44,9 +44,10 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# Shared in-memory engine and audit trail
+# Shared in-memory engine, live ticket status map, and audit trail
 copilot_engine = SupportCopilotEngine()
 audit_log: list[dict[str, Any]] = []
+ticket_status_map: dict[str, ReviewStatusEnum] = {}
 
 
 # --- Health & Status Schema ---
@@ -79,21 +80,26 @@ def health_check():
 
 @app.get("/api/tickets", response_model=list[CustomerTicket])
 def list_incoming_tickets():
-    """Load benchmark queue of incoming customer support tickets."""
+    """Load benchmark queue of incoming customer support tickets with current review status."""
     if not TICKETS_FILE.exists():
         raise HTTPException(status_code=404, detail="Benchmark tickets dataset not found.")
     try:
         raw_data = json.loads(TICKETS_FILE.read_text(encoding="utf-8"))
-        return [
-            CustomerTicket(
-                ticket_id=t["ticket_id"],
-                customer_name=t["customer_name"],
-                customer_tier=t.get("customer_tier", "Standard"),
-                subject=t["subject"],
-                message=t["message"],
+        ticket_list: list[CustomerTicket] = []
+        for t in raw_data:
+            tid = t["ticket_id"]
+            current_status = ticket_status_map.get(tid, ReviewStatusEnum.PENDING)
+            ticket_list.append(
+                CustomerTicket(
+                    ticket_id=tid,
+                    customer_name=t["customer_name"],
+                    customer_tier=t.get("customer_tier", "Standard"),
+                    subject=t["subject"],
+                    message=t["message"],
+                    status=current_status,
+                )
             )
-            for t in raw_data
-        ]
+        return ticket_list
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Failed loading tickets: {str(exc)}")
 
@@ -103,6 +109,9 @@ def generate_ticket_draft(ticket: CustomerTicket):
     """Run full Copilot workflow: Triage + Grounded Knowledge Retrieval + Draft Generation."""
     try:
         draft_response = copilot_engine.generate_draft(ticket)
+        # If triage detects escalation need, automatically update ticket status to Escalated to Supervisor
+        if draft_response.triage.escalate_to_human:
+            ticket_status_map[ticket.ticket_id] = ReviewStatusEnum.ESCALATED
         return draft_response
     except Exception as exc:
         raise HTTPException(
@@ -113,13 +122,15 @@ def generate_ticket_draft(ticket: CustomerTicket):
 
 @app.post("/api/review/submit")
 def submit_agent_review(review: ReviewSubmission):
-    """Human-in-the-loop action: records agent edits, approval decisions, and audit trail."""
+    """Human-in-the-loop action: updates ticket live status and audit trail."""
+    ticket_status_map[review.ticket_id] = review.action
     record = review.model_dump()
     audit_log.append(record)
     return {
         "status": "success",
         "message": f"Ticket {review.ticket_id} marked as '{review.action.value}'.",
         "record": record,
+        "new_status": review.action.value,
     }
 
 
