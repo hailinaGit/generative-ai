@@ -52,3 +52,4 @@
 
 ### Q7: Which part of the project required the most independent problem-solving?
 * Diagnosing and fixing the **58.3% false-positive escalation rate** in `llama3.2`. Rather than blindly accepting the LLM's output or tweaking temperature alone, running the 12-ticket benchmark exposed that small local models over-escalate stressful language. Designing a **hybrid architecture** (combining LLM flexibility with deterministic regex/threshold guardrails) solved the problem cleanly and pushed escalation accuracy to **100%**.
+
