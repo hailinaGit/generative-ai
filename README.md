@@ -19,15 +19,15 @@ This repository contains the end-to-end deliverables, source code, evaluation ev
 ```text
 Internship/
 ├── project-1-rag-assistant/          # Project 1: RAG Knowledge Assistant (✅ Completed)
-├── project-2-support-copilot/        # Project 2: AI Customer Support Copilot (⏳ In Progress)
-└── project-3-workflow-automation/    # Project 3: Document-to-Workflow Automation (📋 Upcoming)
+├── project-2-support-copilot/        # Project 2: AI Customer Support Copilot (✅ Completed)
+└── project-3-document-workflow/      # Project 3: Document-to-Workflow Automation (📋 Upcoming)
 ```
 
 | Project | Type | Tech Stack | Status | Documentation & Evidence |
 | :--- | :--- | :--- | :---: | :--- |
 | **1. RAG Knowledge Assistant** | Core / Foundation | Python, ChromaDB, Ollama (`llama3.2`), FastAPI | **✅ Complete** | [Project 1 README](./project-1-rag-assistant/README.md) • [Eval Results](./project-1-rag-assistant/docs/eval_results.md) • [Viva Prep](./project-1-rag-assistant/docs/viva_prep.md) |
-| **2. AI Customer Support Copilot** | Intermediate Real-World | Python, LangChain, Structured Schemas, HITL UI | **⏳ In Progress** | [Project 2 Folder](./project-2-support-copilot/) |
-| **3. Document-to-Workflow Automation** | Capstone Portfolio | Python, JSON Schema, Workflow Routing | **📋 Upcoming** | Planned |
+| **2. AI Customer Support Copilot** | Intermediate Real-World | Python, Pydantic V2, LangChain, Ollama (`llama3.2`), FastAPI, HITL UI | **✅ Complete** | [Project 2 README](./project-2-support-copilot/README.md) • [Eval Results](./project-2-support-copilot/docs/eval_results.md) • [Viva Prep](./project-2-support-copilot/docs/viva_prep.md) |
+| **3. Document-to-Workflow Automation** | Capstone Portfolio | Python, JSON Schema, Workflow Routing | **📋 Upcoming** | [Project 3 Folder](./project-3-document-workflow/) |
 
 ---
 
@@ -90,18 +90,18 @@ uvicorn src.api:app --reload --port 8000
 This repository uses a structured branch workflow:
 - **`main`** — Production-ready master branch containing all reviewed projects and top-level documentation.
 - **`project-1/rag-assistant`** — Dedicated branch preserving the complete history and implementation of Project 1.
-- **`project-2/support-copilot`** — Active development branch for Project 2.
+- **`project-2/support-copilot`** — Dedicated branch preserving the complete history and implementation of Project 2.
 - **`project-3/workflow-automation`** — Upcoming branch for the capstone project.
 
 ---
 
 ## 📄 Evaluation & Submission Mapping
 
-| Handbook Deliverable (Sec 11) | Project 1 Mapping | Status |
-| :--- | :--- | :---: |
-| Project Source Files | [`project-1-rag-assistant/src/`](./project-1-rag-assistant/src/) | ✅ |
-| Requirements & Research Doc | [`project-1-rag-assistant/docs/requirements.md`](./project-1-rag-assistant/docs/requirements.md) | ✅ |
-| Test / Validation Evidence | [`project-1-rag-assistant/docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) | ✅ |
-| README / Technical Guide | [`project-1-rag-assistant/README.md`](./project-1-rag-assistant/README.md) | ✅ |
-| Viva / Interview Prep | [`project-1-rag-assistant/docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md) | ✅ |
-| Version-Controlled Repository | GitHub: `hailinaGit/generative-ai` | ✅ |
+| Handbook Deliverable (Sec 11) | Project 1 Mapping | Project 2 Mapping | Status |
+| :--- | :--- | :--- | :---: |
+| Project Source Files | [`project-1-rag-assistant/src/`](./project-1-rag-assistant/src/) | [`project-2-support-copilot/src/`](./project-2-support-copilot/src/) | ✅ |
+| Requirements & Research Doc | [`project-1-rag-assistant/docs/requirements.md`](./project-1-rag-assistant/docs/requirements.md) | [`project-2-support-copilot/docs/requirements.md`](./project-2-support-copilot/docs/requirements.md) | ✅ |
+| Test / Validation Evidence | [`project-1-rag-assistant/docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) | [`project-2-support-copilot/docs/eval_results.md`](./project-2-support-copilot/docs/eval_results.md) | ✅ |
+| README / Technical Guide | [`project-1-rag-assistant/README.md`](./project-1-rag-assistant/README.md) | [`project-2-support-copilot/README.md`](./project-2-support-copilot/README.md) | ✅ |
+| Viva / Interview Prep | [`project-1-rag-assistant/docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md) | [`project-2-support-copilot/docs/viva_prep.md`](./project-2-support-copilot/docs/viva_prep.md) | ✅ |
+| Version-Controlled Repository | GitHub: `hailinaGit/generative-ai` | GitHub: `hailinaGit/generative-ai` | ✅ |
