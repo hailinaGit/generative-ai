@@ -259,7 +259,7 @@ class SupportCopilotEngine:
         # Step 4: Build internal reasoning notes
         if triage.escalate_to_human:
             internal_notes = (
-                f"⚠️ MANDATORY SUPERVISOR ESCALATION: {triage.escalation_reason} "
+                f"[ESCALATION REQUIRED]: {triage.escalation_reason} "
                 f"Do not dispatch without supervisor sign-off."
             )
         else:

@@ -686,8 +686,14 @@
         if (data.citations && data.citations.length > 0) {
           data.citations.forEach((c) => {
             const tag = document.createElement('span');
-            tag.style.cssText = 'display:inline-block; font-size:11px; background:#1e293b; color:#93c5fd; padding:2px 8px; border-radius:4px; margin-right:6px; margin-top:4px;';
-            tag.innerText = `📄 ${c.section}: ${c.rule_applied}`;
+            tag.style.cssText = 'display:inline-flex; align-items:center; gap:4px; font-size:11px; background:#1e293b; color:#93c5fd; padding:3px 8px; border-radius:4px; margin-right:6px; margin-top:4px;';
+            tag.innerHTML = `
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              ${c.section}: ${c.rule_applied}
+            `;
             citContainer.appendChild(tag);
           });
         }
