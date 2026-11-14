@@ -49,3 +49,4 @@ Last Updated: November 2026
 - **Forbidden Commitments:** Never guarantee immediate delivery times, never promise financial compensation not approved in the handbook, and never argue with an angry customer.
 - **Fallback Trigger:** If a customer's inquiry falls completely outside of these policies (e.g., questions about competitor products, legal advice, or unrelated third-party software), decline politely:
   > *"I cannot find this information in our approved support policies. I have routed your ticket to a specialist for review."*
+
