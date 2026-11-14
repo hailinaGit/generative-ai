@@ -85,6 +85,24 @@ uvicorn src.api:app --reload --port 8000
 
 ---
 
+## 🤖 Project 2: AI Customer Support Copilot
+
+### 📌 Problem Statement & Real-World Use Case
+Support teams handle high volumes of inbound tickets across billing, technical support, account security, shipping, and cancellations. Manual drafting is slow, while unguarded bots risk hallucinating or promising unauthorized refunds. This project delivers a **Human-in-the-Loop (HITL) Copilot** that triages tickets, retrieves approved policy rules, drafts grounded replies, and enforces deterministic supervisor escalation before dispatch.
+
+### 🌟 Key Technical Implementations
+- **Structured Triage (FR-01):** Pydantic V2 schemas (`CustomerTicket`, `TriageClassification`, `CopilotDraftResponse`, `ReviewSubmission`) enforcing validated Sentiment, Category, and Urgency enums.
+- **Policy Grounding (FR-02 & FR-03):** Section-indexed lookup against [`support_policies.md`](./project-2-support-copilot/data/knowledge_base/support_policies.md) with explicit `PolicyCitation` metadata.
+- **Deterministic Safety Guardrails (FR-04):** Pre-guards automatically flag legal/chargeback threats, security breaches, and refund requests $> \$100$ for mandatory supervisor escalation.
+- **HITL Review Desk & Audit Trail (FR-05 & FR-06):** FastAPI service and interactive Agent Review Desk UI (`/api/tickets`, `/api/copilot/draft`, `/api/review/submit`, `/api/audit-log`).
+
+### 🧪 Verification Evidence & Quickstart
+- **Deterministic Tests:** `cd project-2-support-copilot && python tests/test_copilot.py` (`100%` pass)
+- **12-Ticket LLM Benchmark:** `python tests/evaluate_benchmark.py` (`100.0%` schema compliance, `91.7%` category, `75.0%` urgency, `100.0%` escalation, `100.0%` grounding — see [`docs/eval_results.md`](./project-2-support-copilot/docs/eval_results.md))
+- **Launch UI & API:** `uvicorn src.api:app --reload --port 8000` -> [http://localhost:8000/](http://localhost:8000/)
+
+---
+
 ## 🌿 Git Branch Organization
 
 This repository uses a structured branch workflow:
