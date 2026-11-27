@@ -18,7 +18,7 @@ SRC_DIR = Path(__file__).resolve().parent.parent / "src"
 sys.path.insert(0, str(SRC_DIR))
 
 from retrieve import retrieve_relevant_chunks, get_collection
-from generate import generate_answer, RAG_SYSTEM_PROMPT
+from generate import generate_answer
 
 
 def test_collection_integrity():
