@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document-to-Workflow Automation Desk</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-alt: #0b1220;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 14px 24px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #1e3a5f;
+      color: var(--accent);
+    }
+    .badge.ok { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .badge.warn { background: rgba(245, 158, 11, 0.15); color: var(--amber); }
+    .badge.err { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+    .layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+    aside {
+      border-right: 1px solid var(--border);
+      background: var(--panel-alt);
+      padding: 16px;
+      overflow-y: auto;
+    }
+    aside h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .doc-card {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: var(--panel);
+      transition: border-color 0.15s;
+    }
+    .doc-card:hover, .doc-card.active { border-color: var(--accent); }
+    .doc-card .title { font-size: 13px; font-weight: 600; margin-top: 4px; }
+    .doc-card .meta { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+    main {
+      padding: 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .card h3 { font-size: 15px; margin-bottom: 10px; }
+    textarea, input, select {
+      width: 100%;
+      background: var(--panel-alt);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    textarea { min-height: 110px; resize: vertical; font-family: inherit; }
+    .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+    button {
+      background: var(--accent);
+      color: #0f172a;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button.secondary { background: #334155; color: var(--text); }
+    button.approve { background: var(--green); color: #052e16; }
+    button.reject { background: var(--red); color: #fff; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .item-card {
+      border: 1px solid var(--border);
+      background: var(--panel-alt);
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .quote {
+      margin-top: 8px;
+      padding: 8px 10px;
+      border-left: 3px solid var(--accent);
+      background: rgba(56, 189, 248, 0.07);
+      font-size: 12px;
+      color: #cbd5e1;
+    }
+    .queues-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .queue-box {
+      background: var(--panel-alt);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+    }
+    .queue-box h4 { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .queue-item { font-size: 12px; padding: 6px 0; border-top: 1px solid #1e293b; color: #cbd5e1; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Document-to-Workflow Automation Desk</h1>
+    </div>
+    <div id="healthStatus" class="badge">Connecting...</div>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h2 style="margin:0;">Sample Documents</h2>
+        <button class="secondary" style="padding:4px 8px;font-size:11px;" onclick="newCustomDoc()">+ Custom</button>
+      </div>
+      <div id="docList"></div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 id="editorHeading">Document Input</h3>
+          <span id="docStatusBadge" class="badge">Pending</span>
+        </div>
+        <div class="row" style="margin-top:6px;">
+          <input id="docIdInput" placeholder="Doc ID" style="max-width:130px;" />
+          <input id="docTitleInput" placeholder="Document Title" style="flex:1;" />
+          <input id="docTypeInput" placeholder="Type" style="max-width:180px;" />
+        </div>
+        <div style="margin-top:10px;">
+          <textarea id="docContentInput" placeholder="Paste operational document, meeting notes, or memo..."></textarea>
+        </div>
+        <div class="row">
+          <button id="processBtn" onclick="processCurrentDoc()">Extract & Route Action Items</button>
+        </div>
+      </div>
+
+      <div class="card" id="resultsCard" style="display:none;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>Extracted Action Items & Validation</h3>
+          <span id="resultStatusBadge" class="badge"></span>
+        </div>
+        <p id="resultSummary" style="font-size:13px;color:var(--muted);margin-top:4px;"></p>
+        <p id="rejectionBox" style="font-size:13px;color:var(--red);margin-top:6px;display:none;"></p>
+        <div id="itemsContainer"></div>
+      </div>
+
+      <div class="card">
+        <h3>Simulated Team Queues</h3>
+        <div id="queuesGrid" class="queues-grid"></div>
+      </div>
+
+      <div class="card">
+        <h3>Audit Trail</h3>
+        <div id="auditLog" style="font-size:12px;color:var(--muted);max-height:180px;overflow-y:auto;">No events yet.</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const TEAMS = [
+      "Engineering", "Finance", "HR & People",
+      "Legal & Compliance", "Customer Support", "Operations", "Manual Review"
+    ];
+    let docs = [];
+    let activeDocId = null;
+
+    function badgeClass(status) {
+      if (status === "Completed" || status === "Approved" || status === "Auto-Routed") return "ok";
+      if (status === "Needs Review" || status === "Pending Validation") return "warn";
+      if (status === "Rejected") return "err";
+      return "";
+    }
+
+    async function loadHealth() {
+      const res = await fetch("/health");
+      const data = await res.json();
+      const el = document.getElementById("healthStatus");
+      el.className = "badge ok";
+      el.textContent = `${data.model} • ${data.routing_sections_loaded} policy sections`;
+    }
+
+    async function loadDocs() {
+      const res = await fetch("/api/documents");
+      docs = await res.json();
+      renderDocList();
+      if (!activeDocId && docs.length) selectDoc(docs[0].doc_id);
+    }
+
+    function renderDocList() {
+      const container = document.getElementById("docList");
+      container.innerHTML = docs.map(d => `
+        <div class="doc-card ${d.doc_id === activeDocId ? 'active' : ''}" onclick="selectDoc('${d.doc_id}')">
+          <div class="meta">
+            <span>${d.doc_id} • ${d.doc_type}</span>
+            <span class="badge ${badgeClass(d.extraction_status)}">${d.extraction_status}</span>
+          </div>
+          <div class="title">${d.title}</div>
+        </div>
+      `).join("");
+    }
+
+    function selectDoc(docId) {
+      activeDocId = docId;
+      const d = docs.find(x => x.doc_id === docId);
+      if (!d) return;
+      document.getElementById("docIdInput").value = d.doc_id;
+      document.getElementById("docTitleInput").value = d.title;
+      document.getElementById("docTypeInput").value = d.doc_type;
+      document.getElementById("docContentInput").value = d.content;
+      const b = document.getElementById("docStatusBadge");
+      b.className = `badge ${badgeClass(d.extraction_status)}`;
+      b.textContent = d.extraction_status;
+      renderDocList();
+    }
+
+    function newCustomDoc() {
+      activeDocId = null;
+      document.getElementById("docIdInput").value = `DOC-${Math.floor(400 + Math.random() * 500)}`;
+      document.getElementById("docTitleInput").value = "Custom Operational Document";
+      document.getElementById("docTypeInput").value = "Custom Input";
+      document.getElementById("docContentInput").value = "";
+      document.getElementById("docStatusBadge").className = "badge";
+      document.getElementById("docStatusBadge").textContent = "New";
+      renderDocList();
+    }
+
+    async function processCurrentDoc() {
+      const btn = document.getElementById("processBtn");
+      btn.disabled = true;
+      btn.textContent = "Processing with llama3.2...";
+      try {
+        const payload = {
+          doc_id: document.getElementById("docIdInput").value.trim() || "DOC-CUSTOM",
+          title: document.getElementById("docTitleInput").value.trim() || "Untitled",
+          doc_type: document.getElementById("docTypeInput").value.trim() || "Operational Document",
+          content: document.getElementById("docContentInput").value
+        };
+        const res = await fetch("/api/workflow/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        renderResult(data);
+        await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Extract & Route Action Items";
+      }
+    }
+
+    function renderResult(res) {
+      document.getElementById("resultsCard").style.display = "block";
+      const sb = document.getElementById("resultStatusBadge");
+      sb.className = `badge ${badgeClass(res.extraction_status)}`;
+      sb.textContent = res.extraction_status;
+      document.getElementById("resultSummary").textContent = res.document_summary;
+
+      const rej = document.getElementById("rejectionBox");
+      if (res.rejection_reason) {
+        rej.style.display = "block";
+        rej.textContent = `Rejection Reason: ${res.rejection_reason}`;
+      } else {
+        rej.style.display = "none";
+      }
+
+      const container = document.getElementById("itemsContainer");
+      if (!res.action_items.length) {
+        container.innerHTML = `<p style="font-size:13px;color:var(--muted);margin-top:8px;">No actionable tasks extracted.</p>`;
+        return;
+      }
+
+      container.innerHTML = res.action_items.map(item => `
+        <div class="item-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+            <strong>${item.item_id}: ${item.title}</strong>
+            <div>
+              <span class="badge">${item.target_team} (${item.queue_channel})</span>
+              <span class="badge ${badgeClass(item.validation_status)}">${item.validation_status}</span>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+            Priority: <strong>${item.priority}</strong> •
+            Confidence: <strong>${Math.round(item.confidence * 100)}%</strong> •
+            Quote Verified: <strong>${item.quote_verified ? "Yes" : "No"}</strong>
+            ${item.due_date ? `• Due: <strong>${item.due_date}</strong>` : ""}
+          </div>
+          ${item.review_reason ? `<div style="font-size:12px;color:var(--amber);margin-top:4px;">Guardrail: ${item.review_reason}</div>` : ""}
+          <div class="quote">"${item.source_quote}"</div>
+          <div class="row">
+            <select id="team-${item.item_id}" style="max-width:190px;">
+              ${TEAMS.map(t => `<option value="${t}" ${t === item.target_team ? "selected" : ""}>${t}</option>`).join("")}
+            </select>
+            <button class="approve" onclick="validateItem('${res.doc_id}', '${item.item_id}', 'Approved')">Approve / Route</button>
+            <button class="reject" onclick="validateItem('${res.doc_id}', '${item.item_id}', 'Rejected')">Reject</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function validateItem(docId, itemId, action) {
+      const selectedTeam = document.getElementById(`team-${itemId}`).value;
+      const res = await fetch("/api/workflow/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          doc_id: docId,
+          item_id: itemId,
+          action: action === "Approved" ? "Approved (Overridden)" : action,
+          override_team: selectedTeam
+        })
+      });
+      if (res.ok) {
+        await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+      }
+    }
+
+    async function loadQueues() {
+      const res = await fetch("/api/team-queues");
+      const data = await res.json();
+      const grid = document.getElementById("queuesGrid");
+      grid.innerHTML = Object.entries(data.queues).map(([team, items]) => `
+        <div class="queue-box">
+          <h4><span>${team}</span><span class="badge">${items.length}</span></h4>
+          ${items.length ? items.map(i => `<div class="queue-item"><strong>${i.doc_id}</strong>: ${i.title}</div>`).join("") : `<div class="queue-item" style="color:var(--muted);">Empty</div>`}
+        </div>
+      `).join("");
+    }
+
+    async function loadAudit() {
+      const res = await fetch("/api/audit-log");
+      const data = await res.json();
+      const box = document.getElementById("auditLog");
+      if (!data.audit_records.length) {
+        box.textContent = "No events yet.";
+        return;
+      }
+      box.innerHTML = data.audit_records.map(r => `
+        <div style="padding:4px 0;border-bottom:1px solid #1e293b;">
+          <strong>${r.event}</strong> • ${r.doc_id} ${r.item_id ? `(${r.item_id} → ${r.final_team})` : `(${r.extraction_status})`}
+        </div>
+      `).join("");
+    }
+
+    loadHealth();
+    loadDocs();
+    loadQueues();
+  </script>
+</body>
+</html>

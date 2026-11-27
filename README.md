@@ -20,14 +20,14 @@ This repository contains the end-to-end deliverables, source code, evaluation ev
 Internship/
 ├── project-1-rag-assistant/          # Project 1: RAG Knowledge Assistant (✅ Completed)
 ├── project-2-support-copilot/        # Project 2: AI Customer Support Copilot (✅ Completed)
-└── project-3-document-workflow/      # Project 3: Document-to-Workflow Automation (📋 Upcoming)
+└── project-3-document-workflow/      # Project 3: Document-to-Workflow Automation (✅ Completed)
 ```
 
 | Project | Type | Tech Stack | Status | Documentation & Evidence |
 | :--- | :--- | :--- | :---: | :--- |
 | **1. RAG Knowledge Assistant** | Core / Foundation | Python, ChromaDB, Ollama (`llama3.2`), FastAPI | **✅ Complete** | [Project 1 README](./project-1-rag-assistant/README.md) • [Eval Results](./project-1-rag-assistant/docs/eval_results.md) • [Viva Prep](./project-1-rag-assistant/docs/viva_prep.md) |
 | **2. AI Customer Support Copilot** | Intermediate Real-World | Python, Pydantic V2, LangChain, Ollama (`llama3.2`), FastAPI, HITL UI | **✅ Complete** | [Project 2 README](./project-2-support-copilot/README.md) • [Eval Results](./project-2-support-copilot/docs/eval_results.md) • [Viva Prep](./project-2-support-copilot/docs/viva_prep.md) |
-| **3. Document-to-Workflow Automation** | Capstone Portfolio | Python, JSON Schema, Workflow Routing | **📋 Upcoming** | [Project 3 Folder](./project-3-document-workflow/) |
+| **3. Document-to-Workflow Automation** | Capstone Portfolio | Python, Pydantic V2, LangChain, Ollama (`llama3.2`), FastAPI, Workflow UI | **✅ Complete** | [Project 3 README](./project-3-document-workflow/README.md) • [Eval Results](./project-3-document-workflow/docs/eval_results.md) • [Viva Prep](./project-3-document-workflow/docs/viva_prep.md) |
 
 ---
 
@@ -103,23 +103,41 @@ Support teams handle high volumes of inbound tickets across billing, technical s
 
 ---
 
+## ⚙️ Project 3: Document-to-Workflow Automation
+
+### 📌 Problem Statement & Real-World Use Case
+Operations coordinators manually parse meeting transcripts, incident postmortems, vendor memos, and legal notices to extract action items and route them to the right teams. This capstone delivers a **Document-to-Workflow Automation Engine** that extracts structured tasks, verifies verbatim source quotes, routes them to simulated team queues, and enforces deterministic validation guardrails.
+
+### 🌟 Key Technical Implementations
+- **Structured Extraction & Schemas (FR-01 & FR-03):** Pydantic V2 schemas (`DocumentInput`, `ActionItem`, `WorkflowResult`, `ValidationSubmission`) with `confidence`, `source_quote`, and `quote_verified`.
+- **Grounded Team Routing (FR-02):** Routes tasks strictly against [`team_directory.md`](./project-3-document-workflow/data/routing_rules/team_directory.md) (`Engineering`, `Finance`, `HR & People`, `Legal & Compliance`, `Customer Support`, `Operations`, `Manual Review`).
+- **Deterministic Safety & Uncertainty Guardrails (FR-04):** Rejects empty/invalid inputs (`Rejected`), routes `< 0.70` confidence or unverified quotes to `Manual Review`, and flags Legal items and Finance spend $> \$5,000$ for human validation.
+- **Validation Desk & Simulated Queues (FR-05 & FR-06):** FastAPI service and interactive dashboard (`/api/documents`, `/api/workflow/process`, `/api/workflow/validate`, `/api/team-queues`, `/api/audit-log`).
+
+### 🧪 Verification Evidence & Quickstart
+- **Deterministic Tests:** `cd project-3-document-workflow && python tests/test_workflow.py` (`100%` pass)
+- **9-Document LLM Benchmark:** `python tests/evaluate_workflow.py` (`100.0%` schema compliance, `90.9%` extraction recall, `90.9%` team routing, `91.7%` quote grounding, `88.9%` status accuracy — see [`docs/eval_results.md`](./project-3-document-workflow/docs/eval_results.md))
+- **Launch UI & API:** `uvicorn src.api:app --reload --port 8000` -> [http://localhost:8000/](http://localhost:8000/)
+
+---
+
 ## 🌿 Git Branch Organization
 
 This repository uses a structured branch workflow:
 - **`main`** — Production-ready master branch containing all reviewed projects and top-level documentation.
 - **`project-1/rag-assistant`** — Dedicated branch preserving the complete history and implementation of Project 1.
 - **`project-2/support-copilot`** — Dedicated branch preserving the complete history and implementation of Project 2.
-- **`project-3/workflow-automation`** — Upcoming branch for the capstone project.
+- **`project-3/workflow-automation`** — Dedicated branch preserving the complete history and implementation of Project 3.
 
 ---
 
 ## 📄 Evaluation & Submission Mapping
 
-| Handbook Deliverable (Sec 11) | Project 1 Mapping | Project 2 Mapping | Status |
-| :--- | :--- | :--- | :---: |
-| Project Source Files | [`project-1-rag-assistant/src/`](./project-1-rag-assistant/src/) | [`project-2-support-copilot/src/`](./project-2-support-copilot/src/) | ✅ |
-| Requirements & Research Doc | [`project-1-rag-assistant/docs/requirements.md`](./project-1-rag-assistant/docs/requirements.md) | [`project-2-support-copilot/docs/requirements.md`](./project-2-support-copilot/docs/requirements.md) | ✅ |
-| Test / Validation Evidence | [`project-1-rag-assistant/docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) | [`project-2-support-copilot/docs/eval_results.md`](./project-2-support-copilot/docs/eval_results.md) | ✅ |
-| README / Technical Guide | [`project-1-rag-assistant/README.md`](./project-1-rag-assistant/README.md) | [`project-2-support-copilot/README.md`](./project-2-support-copilot/README.md) | ✅ |
-| Viva / Interview Prep | [`project-1-rag-assistant/docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md) | [`project-2-support-copilot/docs/viva_prep.md`](./project-2-support-copilot/docs/viva_prep.md) | ✅ |
-| Version-Controlled Repository | GitHub: `hailinaGit/generative-ai` | GitHub: `hailinaGit/generative-ai` | ✅ |
+| Handbook Deliverable (Sec 11) | Project 1 Mapping | Project 2 Mapping | Project 3 Mapping | Status |
+| :--- | :--- | :--- | :--- | :---: |
+| Project Source Files | [`project-1-rag-assistant/src/`](./project-1-rag-assistant/src/) | [`project-2-support-copilot/src/`](./project-2-support-copilot/src/) | [`project-3-document-workflow/src/`](./project-3-document-workflow/src/) | ✅ |
+| Requirements & Research Doc | [`project-1-rag-assistant/docs/requirements.md`](./project-1-rag-assistant/docs/requirements.md) | [`project-2-support-copilot/docs/requirements.md`](./project-2-support-copilot/docs/requirements.md) | [`project-3-document-workflow/docs/requirements.md`](./project-3-document-workflow/docs/requirements.md) | ✅ |
+| Test / Validation Evidence | [`project-1-rag-assistant/docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) | [`project-2-support-copilot/docs/eval_results.md`](./project-2-support-copilot/docs/eval_results.md) | [`project-3-document-workflow/docs/eval_results.md`](./project-3-document-workflow/docs/eval_results.md) | ✅ |
+| README / Technical Guide | [`project-1-rag-assistant/README.md`](./project-1-rag-assistant/README.md) | [`project-2-support-copilot/README.md`](./project-2-support-copilot/README.md) | [`project-3-document-workflow/README.md`](./project-3-document-workflow/README.md) | ✅ |
+| Viva / Interview Prep | [`project-1-rag-assistant/docs/viva_prep.md`](./project-1-rag-assistant/docs/viva_prep.md) | [`project-2-support-copilot/docs/viva_prep.md`](./project-2-support-copilot/docs/viva_prep.md) | [`project-3-document-workflow/docs/viva_prep.md`](./project-3-document-workflow/docs/viva_prep.md) | ✅ |
+| Version-Controlled Repository | GitHub: `hailinaGit/generative-ai` | GitHub: `hailinaGit/generative-ai` | GitHub: `hailinaGit/generative-ai` | ✅ |

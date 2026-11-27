@@ -1,0 +1,125 @@
+[
+  {
+    "doc_id": "DOC-301",
+    "title": "Weekly Engineering & Ops Sync Notes",
+    "doc_type": "Meeting Transcript",
+    "content": "Date: Nov 24, 2026. Attendees: Maya (Eng), Liam (Ops).\n1. Maya will deploy the hotfix for the checkout API 500 error by Nov 25, 2026.\n2. Liam needs to order 10 replacement barcode scanners for the Phnom Penh warehouse before Dec 1, 2026.",
+    "expected_status": "Completed",
+    "expected_items": [
+      {
+        "target_team": "Engineering",
+        "priority": "High"
+      },
+      {
+        "target_team": "Operations",
+        "priority": "Medium"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-302",
+    "title": "Q4 Vendor Invoice & Audit Request",
+    "doc_type": "Finance Memo",
+    "content": "From: Accounts Payable. Please process vendor invoice #INV-8841 for $2,400.00 USD for cloud monitoring software by Nov 29, 2026. Also, schedule the annual GDPR data privacy compliance audit with external counsel by Dec 10, 2026.",
+    "expected_status": "Needs Review",
+    "expected_items": [
+      {
+        "target_team": "Finance",
+        "priority": "Medium"
+      },
+      {
+        "target_team": "Legal & Compliance",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-303",
+    "title": "New Hire Onboarding Checklist - Sokha Dara",
+    "doc_type": "HR Request",
+    "content": "Sokha Dara joins as Junior Backend Engineer on Dec 2, 2026. HR & People must complete benefits enrollment and orientation scheduling by Nov 30, 2026. Customer Support should update the internal help-center escalation roster before Dec 2, 2026.",
+    "expected_status": "Completed",
+    "expected_items": [
+      {
+        "target_team": "HR & People",
+        "priority": "High"
+      },
+      {
+        "target_team": "Customer Support",
+        "priority": "Medium"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-304",
+    "title": "Production Database Latency Postmortem",
+    "doc_type": "Incident Report",
+    "content": "Incident #412 caused 45 minutes of database query timeouts for enterprise customers. Action item: Engineering must add read-replica connection pooling and database index optimization by Nov 26, 2026. Customer Support must issue SLA credit notifications to affected VIP clients by Nov 26, 2026.",
+    "expected_status": "Completed",
+    "expected_items": [
+      {
+        "target_team": "Engineering",
+        "priority": "Critical"
+      },
+      {
+        "target_team": "Customer Support",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-305",
+    "title": "High-Value Cloud Hardware Purchase Order",
+    "doc_type": "Procurement Request",
+    "content": "Requesting Finance approval to wire $12,500.00 USD for dedicated GPU server cluster hardware (PO-9920) by Dec 5, 2026.",
+    "expected_status": "Needs Review",
+    "expected_items": [
+      {
+        "target_team": "Finance",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-306",
+    "title": "Customer NDA Redline & Contract Review",
+    "doc_type": "Legal Notice",
+    "content": "Enterprise prospect Acme Corp returned redlines on the Mutual NDA and Master Services Agreement (MSA). Legal & Compliance needs to review Section 8 liability caps by Nov 28, 2026.",
+    "expected_status": "Needs Review",
+    "expected_items": [
+      {
+        "target_team": "Legal & Compliance",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-307",
+    "title": "Ambiguous Brainstorming Fragment",
+    "doc_type": "Unstructured Note",
+    "content": "Maybe someone should look into that thing we talked about last Tuesday if there is time later, or ask whoever handles it.",
+    "expected_status": "Needs Review",
+    "expected_items": [
+      {
+        "target_team": "Manual Review",
+        "priority": "Low"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-308",
+    "title": "Off-Topic Cafeteria Lunch Menu",
+    "doc_type": "Announcement",
+    "content": "This Friday the office cafeteria will serve Khmer noodle soup, mango sticky rice, and iced coffee from 11:30 AM to 1:30 PM. Enjoy your weekend!",
+    "expected_status": "Completed",
+    "expected_items": []
+  },
+  {
+    "doc_id": "DOC-309",
+    "title": "Corrupted / Empty Submission",
+    "doc_type": "Invalid Input",
+    "content": "   ",
+    "expected_status": "Rejected",
+    "expected_items": []
+  }
+]
