@@ -164,6 +164,14 @@ Rules:
 """
 
 
+def _strip_json_fences(raw_content: str) -> str:
+    """Strip optional markdown ```json fences from LLM output."""
+    text = raw_content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text)
+    return text
+
+
 class DocumentWorkflowEngine:
     """Orchestrates input validation, LLM action-item extraction, and deterministic routing guardrails."""
 
@@ -178,83 +186,97 @@ class DocumentWorkflowEngine:
         self.directory = RoutingDirectory(directory_path)
         self.llm = ChatOllama(model=model_name, temperature=temperature)
 
+    def _validate_single_item(
+        self,
+        doc: DocumentInput,
+        idx: int,
+        raw: dict,
+        threshold: float,
+    ) -> Optional[ActionItem]:
+        """Validate one raw extracted item and enforce quote, confidence, and policy guardrails."""
+        title = str(raw.get("title") or "").strip()
+        if not title:
+            return None
+
+        team = _safe_enum(TeamEnum, raw.get("target_team"), TeamEnum.MANUAL_REVIEW)
+        priority = _safe_enum(PriorityEnum, raw.get("priority"), PriorityEnum.MEDIUM)
+
+        try:
+            confidence = float(raw.get("confidence", 0.5))
+        except (TypeError, ValueError):
+            confidence = 0.5
+        confidence = max(0.0, min(1.0, round(confidence, 2)))
+
+        source_quote = str(raw.get("source_quote") or "").strip()
+        quote_verified = verify_source_quote(source_quote, doc.content)
+
+        reasons: list[str] = []
+        requires_manual = False
+
+        if not quote_verified:
+            confidence = min(confidence, 0.65)
+            requires_manual = True
+            reasons.append("Source quote could not be verified verbatim in document.")
+
+        if confidence < threshold:
+            team = TeamEnum.MANUAL_REVIEW
+            requires_manual = True
+            reasons.append(f"Confidence {confidence:.2f} below {threshold:.2f} threshold.")
+
+        if team == TeamEnum.MANUAL_REVIEW:
+            requires_manual = True
+            if not reasons:
+                reasons.append("Routed to Manual Review due to ambiguous ownership or scope.")
+        elif team == TeamEnum.LEGAL:
+            requires_manual = True
+            reasons.append("Mandatory human legal review required by POL-ROUTING-003.")
+        elif team == TeamEnum.FINANCE:
+            max_amt = max(
+                extract_max_currency(source_quote),
+                extract_max_currency(title),
+                extract_max_currency(doc.content),
+            )
+            if max_amt > FINANCE_APPROVAL_THRESHOLD:
+                requires_manual = True
+                reasons.append(
+                    f"Finance amount ${max_amt:,.2f} exceeds ${FINANCE_APPROVAL_THRESHOLD:,.2f} VP approval threshold."
+                )
+
+        validation_status = (
+            ValidationStatusEnum.PENDING_VALIDATION
+            if requires_manual
+            else ValidationStatusEnum.AUTO_ROUTED
+        )
+
+        return ActionItem(
+            item_id=f"ACT-{doc.doc_id}-{idx}",
+            title=title,
+            owner_role=raw.get("owner_role"),
+            target_team=team,
+            queue_channel=TEAM_QUEUE_CHANNELS[team],
+            priority=priority,
+            due_date=raw.get("due_date"),
+            confidence=confidence,
+            source_quote=source_quote or "(none)",
+            quote_verified=quote_verified,
+            requires_manual_review=requires_manual,
+            review_reason=" ".join(reasons) if reasons else None,
+            validation_status=validation_status,
+        )
+
     def apply_routing_guardrails(
         self,
         doc: DocumentInput,
         raw_items: list[dict],
+        confidence_threshold: Optional[float] = None,
     ) -> list[ActionItem]:
         """Validate extracted items, verify source quotes, and enforce confidence/policy guardrails."""
+        threshold = CONFIDENCE_THRESHOLD if confidence_threshold is None else confidence_threshold
         validated_items: list[ActionItem] = []
-
         for idx, raw in enumerate(raw_items, 1):
-            title = str(raw.get("title") or "").strip()
-            if not title:
-                continue
-
-            team = _safe_enum(TeamEnum, raw.get("target_team"), TeamEnum.MANUAL_REVIEW)
-            priority = _safe_enum(PriorityEnum, raw.get("priority"), PriorityEnum.MEDIUM)
-
-            try:
-                confidence = float(raw.get("confidence", 0.5))
-            except (TypeError, ValueError):
-                confidence = 0.5
-            confidence = max(0.0, min(1.0, round(confidence, 2)))
-
-            source_quote = str(raw.get("source_quote") or "").strip()
-            quote_verified = verify_source_quote(source_quote, doc.content)
-
-            reasons: list[str] = []
-            requires_manual = False
-
-            if not quote_verified:
-                confidence = min(confidence, 0.65)
-                requires_manual = True
-                reasons.append("Source quote could not be verified verbatim in document.")
-
-            if confidence < CONFIDENCE_THRESHOLD:
-                team = TeamEnum.MANUAL_REVIEW
-                requires_manual = True
-                reasons.append(f"Confidence {confidence:.2f} below {CONFIDENCE_THRESHOLD:.2f} threshold.")
-
-            if team == TeamEnum.MANUAL_REVIEW:
-                requires_manual = True
-                if not reasons:
-                    reasons.append("Routed to Manual Review due to ambiguous ownership or scope.")
-
-            if team == TeamEnum.LEGAL:
-                requires_manual = True
-                reasons.append("Mandatory human legal review required by POL-ROUTING-003.")
-
-            if team == TeamEnum.FINANCE:
-                max_amt = max(extract_max_currency(source_quote), extract_max_currency(title), extract_max_currency(doc.content))
-                if max_amt > FINANCE_APPROVAL_THRESHOLD:
-                    requires_manual = True
-                    reasons.append(f"Finance amount ${max_amt:,.2f} exceeds ${FINANCE_APPROVAL_THRESHOLD:,.2f} VP approval threshold.")
-
-            validation_status = (
-                ValidationStatusEnum.PENDING_VALIDATION
-                if requires_manual
-                else ValidationStatusEnum.AUTO_ROUTED
-            )
-
-            validated_items.append(
-                ActionItem(
-                    item_id=f"ACT-{doc.doc_id}-{idx}",
-                    title=title,
-                    owner_role=raw.get("owner_role"),
-                    target_team=team,
-                    queue_channel=TEAM_QUEUE_CHANNELS[team],
-                    priority=priority,
-                    due_date=raw.get("due_date"),
-                    confidence=confidence,
-                    source_quote=source_quote or "(none)",
-                    quote_verified=quote_verified,
-                    requires_manual_review=requires_manual,
-                    review_reason=" ".join(reasons) if reasons else None,
-                    validation_status=validation_status,
-                )
-            )
-
+            item = self._validate_single_item(doc, idx, raw, threshold)
+            if item is not None:
+                validated_items.append(item)
         return validated_items
 
     def process_document(self, doc: DocumentInput) -> WorkflowResult:
@@ -275,7 +297,12 @@ class DocumentWorkflowEngine:
             ("human", "Document ID: {doc_id}\nTitle: {title}\nType: {doc_type}\nContent:\n{content}"),
         ])
 
-        chain = prompt | self.llm
+        llm = (
+            self.llm
+            if doc.model_name == self.model_name
+            else ChatOllama(model=doc.model_name, temperature=self.temperature)
+        )
+        chain = prompt | llm
         try:
             res = chain.invoke({
                 "routing_directory": self.directory.raw_text,
@@ -284,17 +311,16 @@ class DocumentWorkflowEngine:
                 "doc_type": doc.doc_type,
                 "content": content_clean,
             })
-            raw_content = str(res.content).strip()
-            if raw_content.startswith("```"):
-                raw_content = re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_content)
-
+            raw_content = _strip_json_fences(str(res.content))
             parsed = json.loads(raw_content)
             summary = str(parsed.get("document_summary") or f"Processed {doc.title}").strip()
             raw_items = parsed.get("action_items") or []
             if not isinstance(raw_items, list):
                 raw_items = []
 
-            action_items = self.apply_routing_guardrails(doc, raw_items)
+            action_items = self.apply_routing_guardrails(
+                doc, raw_items, confidence_threshold=doc.confidence_threshold
+            )
             needs_review = any(item.requires_manual_review for item in action_items)
             status = ExtractionStatusEnum.NEEDS_REVIEW if needs_review else ExtractionStatusEnum.COMPLETED
 

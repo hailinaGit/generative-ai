@@ -121,5 +121,56 @@
     "content": "   ",
     "expected_status": "Rejected",
     "expected_items": []
+  },
+  {
+    "doc_id": "DOC-310",
+    "title": "Employee Offboarding & Equipment Return",
+    "doc_type": "HR & IT Notice",
+    "content": "Vanna Meas's last working day is Dec 4, 2026. HR & People must complete exit interview paperwork and benefits termination by Dec 4, 2026. Operations must collect the company MacBook Pro and office access badge on Dec 4, 2026.",
+    "expected_status": "Completed",
+    "expected_items": [
+      {
+        "target_team": "HR & People",
+        "priority": "High"
+      },
+      {
+        "target_team": "Operations",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-311",
+    "title": "VIP Client Webhook Failure Escalation",
+    "doc_type": "Customer Escalation",
+    "content": "Enterprise client Mekong Pay reported webhook delivery failures since 09:00 AM. Engineering needs to patch the retry worker queue bug within 2 hours. Customer Support must send an incident status update to the VIP account manager by 11:30 AM.",
+    "expected_status": "Completed",
+    "expected_items": [
+      {
+        "target_team": "Engineering",
+        "priority": "Critical"
+      },
+      {
+        "target_team": "Customer Support",
+        "priority": "High"
+      }
+    ]
+  },
+  {
+    "doc_id": "DOC-312",
+    "title": "Phnom Penh Office Lease Renewal & Deposit",
+    "doc_type": "Facilities & Legal Memo",
+    "content": "The Phnom Penh office lease expires Jan 15, 2027. Legal & Compliance must review the 2-year renewal contract addendum by Dec 12, 2026. Finance needs to approve the $8,500.00 USD security deposit wire transfer by Dec 18, 2026.",
+    "expected_status": "Needs Review",
+    "expected_items": [
+      {
+        "target_team": "Legal & Compliance",
+        "priority": "High"
+      },
+      {
+        "target_team": "Finance",
+        "priority": "Medium"
+      }
+    ]
   }
 ]

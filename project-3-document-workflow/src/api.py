@@ -11,12 +11,14 @@ Endpoints:
 """
 from __future__ import annotations
 
+import io
 import json
 import sys
+import urllib.request
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -28,6 +30,7 @@ for p in (str(SRC_DIR), str(PROJECT_DIR)):
 
 from models import (
     TEAM_QUEUE_CHANNELS,
+    ActionItem,
     DocumentInput,
     ExtractionStatusEnum,
     TeamEnum,
@@ -142,6 +145,82 @@ def process_document(doc: DocumentInput):
         )
 
 
+@app.get("/api/models")
+def list_available_models():
+    """Fetch locally installed Ollama models, falling back to default llama3.2."""
+    default_model = workflow_engine.model_name
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=2.0) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        names = [m["name"] for m in payload.get("models", []) if m.get("name")]
+        if default_model not in names:
+            names.insert(0, default_model)
+        return {"models": names}
+    except Exception:
+        return {"models": [default_model]}
+
+
+@app.get("/api/routing-rules")
+def get_routing_rules():
+    """Return the approved team routing directory markdown for UI inspection."""
+    return {
+        "section_count": workflow_engine.directory.section_count,
+        "content": workflow_engine.directory.raw_text,
+    }
+
+
+def _extract_uploaded_text(raw_bytes: bytes, filename: str) -> str:
+    """Extract UTF-8 text from .txt/.md/.json or PDF bytes."""
+    if Path(filename).suffix.lower() != ".pdf":
+        return raw_bytes.decode("utf-8", errors="replace").strip()
+    try:
+        from pypdf import PdfReader
+
+        reader = PdfReader(io.BytesIO(raw_bytes))
+        return "\n".join((p.extract_text() or "") for p in reader.pages).strip()
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to parse PDF '{filename}': {exc}")
+
+
+def _apply_validation_overrides(item: ActionItem, submission: ValidationSubmission) -> None:
+    """Apply coordinator overrides and validation status to an ActionItem."""
+    if submission.override_title is not None and submission.override_title.strip():
+        item.title = submission.override_title.strip()
+    if submission.override_team is not None:
+        item.target_team = submission.override_team
+        item.queue_channel = TEAM_QUEUE_CHANNELS[submission.override_team]
+    if submission.override_priority is not None:
+        item.priority = submission.override_priority
+    if submission.override_due_date is not None:
+        item.due_date = submission.override_due_date.strip() or None
+    item.validation_status = submission.action
+    item.requires_manual_review = submission.action == ValidationStatusEnum.PENDING_VALIDATION
+
+
+@app.post("/api/workflow/upload", response_model=WorkflowResult)
+async def upload_and_process_document(
+    file: UploadFile = File(...),
+    doc_id: str = Form(default="DOC-UPLOAD"),
+    confidence_threshold: float = Form(default=0.70),
+    model_name: str = Form(default="llama3.2"),
+):
+    """Upload a .txt, .md, .json, or .pdf document and run workflow extraction."""
+    raw_bytes = await file.read()
+    filename = file.filename or "uploaded_document"
+    suffix = Path(filename).suffix.lower()
+    content = _extract_uploaded_text(raw_bytes, filename)
+
+    doc = DocumentInput(
+        doc_id=doc_id.strip() or "DOC-UPLOAD",
+        title=Path(filename).stem,
+        doc_type=f"Uploaded ({suffix or 'text'})",
+        content=content,
+        confidence_threshold=max(0.0, min(1.0, confidence_threshold)),
+        model_name=model_name.strip() or "llama3.2",
+    )
+    return process_document(doc)
+
+
 @app.post("/api/workflow/validate")
 def validate_action_item(submission: ValidationSubmission):
     """Human-in-the-loop validation or override of an extracted action item."""
@@ -153,14 +232,7 @@ def validate_action_item(submission: ValidationSubmission):
     if not target_item:
         raise HTTPException(status_code=404, detail=f"Action item '{submission.item_id}' not found.")
 
-    if submission.override_team is not None:
-        target_item.target_team = submission.override_team
-        target_item.queue_channel = TEAM_QUEUE_CHANNELS[submission.override_team]
-    if submission.override_priority is not None:
-        target_item.priority = submission.override_priority
-
-    target_item.validation_status = submission.action
-    target_item.requires_manual_review = submission.action == ValidationStatusEnum.PENDING_VALIDATION
+    _apply_validation_overrides(target_item, submission)
 
     still_pending = any(
         i.validation_status == ValidationStatusEnum.PENDING_VALIDATION for i in result.action_items
@@ -203,3 +275,12 @@ def get_audit_log():
         "total_events": len(audit_log),
         "audit_records": list(reversed(audit_log)),
     }
+
+
+@app.post("/api/workflow/reset")
+def reset_session():
+    """Clear processed results, simulated team queues, and audit log for fresh demos."""
+    processed_results.clear()
+    audit_log.clear()
+    _sync_team_queues()
+    return {"status": "reset", "message": "Cleared processed results, team queues, and audit log."}

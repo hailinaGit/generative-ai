@@ -22,7 +22,6 @@ from models import (
     TEAM_QUEUE_CHANNELS,
     DocumentInput,
     ExtractionStatusEnum,
-    PriorityEnum,
     TeamEnum,
     ValidationStatusEnum,
 )

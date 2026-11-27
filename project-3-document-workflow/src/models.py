@@ -66,6 +66,8 @@ class DocumentInput(BaseModel):
     title: str = Field(..., description="Document title")
     doc_type: str = Field(default="Operational Document", description="Document category")
     content: str = Field(..., description="Raw document text body")
+    confidence_threshold: float = Field(default=0.70, ge=0.0, le=1.0, description="Minimum confidence before Manual Review")
+    model_name: str = Field(default="llama3.2", description="Local Ollama model name")
     submitted_at: str = Field(default_factory=_utc_now_iso)
 
 
@@ -100,7 +102,9 @@ class ValidationSubmission(BaseModel):
     item_id: str
     reviewer_name: str = Field(default="Ops_Coordinator_01")
     action: ValidationStatusEnum
+    override_title: Optional[str] = None
     override_team: Optional[TeamEnum] = None
     override_priority: Optional[PriorityEnum] = None
+    override_due_date: Optional[str] = None
     review_notes: Optional[str] = None
     reviewed_at: str = Field(default_factory=_utc_now_iso)

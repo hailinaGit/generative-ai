@@ -22,19 +22,23 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
     header {
-      padding: 14px 24px;
+      padding: 12px 24px;
       background: var(--panel);
       border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     header h1 { font-size: 18px; font-weight: 600; }
+    .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .badge {
       display: inline-block;
       padding: 3px 9px;
@@ -49,17 +53,23 @@
     .badge.err { background: rgba(239, 68, 68, 0.15); color: var(--red); }
     .layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 310px 1fr;
       flex: 1;
       min-height: 0;
+      overflow: hidden;
+    }
+    @media (max-width: 900px) {
+      body { height: auto; overflow: auto; }
+      .layout { grid-template-columns: 1fr; overflow: visible; }
     }
     aside {
       border-right: 1px solid var(--border);
       background: var(--panel-alt);
       padding: 16px;
+      height: 100%;
       overflow-y: auto;
     }
-    aside h2 { font-size: 13px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    aside h2 { font-size: 12px; text-transform: uppercase; color: var(--muted); }
     .doc-card {
       padding: 10px 12px;
       border: 1px solid var(--border);
@@ -71,13 +81,14 @@
     }
     .doc-card:hover, .doc-card.active { border-color: var(--accent); }
     .doc-card .title { font-size: 13px; font-weight: 600; margin-top: 4px; }
-    .doc-card .meta { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+    .doc-card .meta { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
     main {
       padding: 20px 24px;
+      height: 100%;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 16px;
     }
     .card {
       background: var(--panel);
@@ -97,6 +108,20 @@
     }
     textarea { min-height: 110px; resize: vertical; font-family: inherit; }
     .row { display: flex; gap: 10px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+    .dropzone {
+      margin-top: 10px;
+      padding: 12px;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      background: var(--panel-alt);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .dropzone.dragover { border-color: var(--accent); color: var(--text); }
     button {
       background: var(--accent);
       color: #0f172a;
@@ -128,7 +153,7 @@
     }
     .queues-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 10px;
       margin-top: 10px;
     }
@@ -137,9 +162,58 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 10px;
+      cursor: pointer;
+      max-height: 220px;
+      overflow-y: auto;
     }
-    .queue-box h4 { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .queue-box.selected { border-color: var(--accent); }
+    .queue-box h4 {
+      font-size: 13px;
+      padding-bottom: 6px;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+      position: sticky;
+      top: -10px;
+      padding-top: 4px;
+      background: var(--panel-alt);
+    }
     .queue-item { font-size: 12px; padding: 6px 0; border-top: 1px solid #1e293b; color: #cbd5e1; }
+    dialog {
+      margin: auto;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 720px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.65); }
+    pre { white-space: pre-wrap; font-size: 12px; line-height: 1.5; color: #cbd5e1; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 24px;
+      z-index: 9999;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok { border-color: var(--green); color: var(--green); }
+    .toast.err { border-color: var(--red); color: var(--red); }
   </style>
 </head>
 <body>
@@ -147,31 +221,57 @@
     <div>
       <h1>Document-to-Workflow Automation Desk</h1>
     </div>
-    <div id="healthStatus" class="badge">Connecting...</div>
+    <div class="header-actions">
+      <button class="secondary" onclick="openPolicyModal()">Routing Rules</button>
+      <button class="secondary" onclick="exportAuditJson()">Export Audit JSON</button>
+      <button class="secondary" onclick="resetSession()">Reset Session</button>
+      <div id="healthStatus" class="badge">Connecting...</div>
+    </div>
   </header>
 
   <div class="layout">
     <aside>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h2 style="margin:0;">Sample Documents</h2>
-        <button class="secondary" style="padding:4px 8px;font-size:11px;" onclick="newCustomDoc()">+ Custom</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:6px;">
+        <h2>Documents</h2>
+        <div style="display:flex;gap:6px;">
+          <button class="secondary" style="padding:4px 8px;font-size:11px;" onclick="newCustomDoc()">+ Custom</button>
+          <button id="batchBtn" style="padding:4px 8px;font-size:11px;" onclick="runAllSamples()">Run All</button>
+        </div>
       </div>
+      <input id="docFilter" placeholder="Filter by title, ID, or status..." style="margin-bottom:10px;" oninput="renderDocList()" />
       <div id="docList"></div>
     </aside>
 
     <main>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3 id="editorHeading">Document Input</h3>
+          <h3>Document Input & Extraction Controls</h3>
           <span id="docStatusBadge" class="badge">Pending</span>
         </div>
         <div class="row" style="margin-top:6px;">
           <input id="docIdInput" placeholder="Doc ID" style="max-width:130px;" />
-          <input id="docTitleInput" placeholder="Document Title" style="flex:1;" />
-          <input id="docTypeInput" placeholder="Type" style="max-width:180px;" />
+          <input id="docTitleInput" placeholder="Document Title" style="flex:1;min-width:180px;" />
+          <input id="docTypeInput" placeholder="Type" style="max-width:170px;" />
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;flex:1;min-width:220px;">
+            Confidence Threshold: <strong id="thresholdVal" style="color:var(--text);">0.70</strong>
+            <input id="thresholdInput" type="range" min="0.40" max="0.95" step="0.05" value="0.70"
+              oninput="document.getElementById('thresholdVal').textContent=Number(this.value).toFixed(2)" style="flex:1;" />
+          </label>
+          <label style="font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;">
+            Model:
+            <select id="modelInput" style="max-width:160px;">
+              <option value="llama3.2" selected>llama3.2</option>
+            </select>
+          </label>
+        </div>
+        <div class="dropzone" id="dropzone">
+          <span>Drop a <strong>.txt</strong>, <strong>.md</strong>, <strong>.json</strong>, or <strong>.pdf</strong> file here, or upload to extract directly</span>
+          <input id="filePicker" type="file" accept=".txt,.md,.json,.pdf" style="max-width:220px;" onchange="handleFileUpload(this.files[0])" />
         </div>
         <div style="margin-top:10px;">
-          <textarea id="docContentInput" placeholder="Paste operational document, meeting notes, or memo..."></textarea>
+          <textarea id="docContentInput" placeholder="Paste any operational document, meeting transcript, vendor memo, or incident report..."></textarea>
         </div>
         <div class="row">
           <button id="processBtn" onclick="processCurrentDoc()">Extract & Route Action Items</button>
@@ -180,7 +280,7 @@
 
       <div class="card" id="resultsCard" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3>Extracted Action Items & Validation</h3>
+          <h3>Extracted Action Items & Inline Validation</h3>
           <span id="resultStatusBadge" class="badge"></span>
         </div>
         <p id="resultSummary" style="font-size:13px;color:var(--muted);margin-top:4px;"></p>
@@ -189,7 +289,10 @@
       </div>
 
       <div class="card">
-        <h3>Simulated Team Queues</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>Simulated Team Queues</h3>
+          <span id="queueFilterLabel" style="font-size:12px;color:var(--muted);">Click any team to filter</span>
+        </div>
         <div id="queuesGrid" class="queues-grid"></div>
       </div>
 
@@ -200,16 +303,28 @@
     </main>
   </div>
 
+  <dialog id="policyDialog">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <h3>Approved Team Routing Directory (team_directory.md)</h3>
+      <button class="secondary" onclick="document.getElementById('policyDialog').close()">Close</button>
+    </div>
+    <pre id="policyContent">Loading...</pre>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
   <script>
     const TEAMS = [
       "Engineering", "Finance", "HR & People",
       "Legal & Compliance", "Customer Support", "Operations", "Manual Review"
     ];
+    const PRIORITIES = ["Low", "Medium", "High", "Critical"];
     let docs = [];
     let activeDocId = null;
+    let selectedQueueTeam = null;
 
     function badgeClass(status) {
-      if (status === "Completed" || status === "Approved" || status === "Auto-Routed") return "ok";
+      if (status === "Completed" || status === "Approved" || status === "Approved (Overridden)" || status === "Auto-Routed") return "ok";
       if (status === "Needs Review" || status === "Pending Validation") return "warn";
       if (status === "Rejected") return "err";
       return "";
@@ -223,6 +338,21 @@
       el.textContent = `${data.model} • ${data.routing_sections_loaded} policy sections`;
     }
 
+    async function loadModels() {
+      try {
+        const res = await fetch("/api/models");
+        const data = await res.json();
+        const sel = document.getElementById("modelInput");
+        if (data.models && data.models.length) {
+          sel.innerHTML = data.models
+            .map(m => `<option value="${m}" ${m.startsWith("llama3.2") ? "selected" : ""}>${m}</option>`)
+            .join("");
+        }
+      } catch (e) {
+        console.warn("Could not load Ollama models:", e);
+      }
+    }
+
     async function loadDocs() {
       const res = await fetch("/api/documents");
       docs = await res.json();
@@ -231,8 +361,14 @@
     }
 
     function renderDocList() {
+      const q = (document.getElementById("docFilter").value || "").toLowerCase();
+      const filtered = docs.filter(d =>
+        d.doc_id.toLowerCase().includes(q) ||
+        d.title.toLowerCase().includes(q) ||
+        d.extraction_status.toLowerCase().includes(q)
+      );
       const container = document.getElementById("docList");
-      container.innerHTML = docs.map(d => `
+      container.innerHTML = filtered.map(d => `
         <div class="doc-card ${d.doc_id === activeDocId ? 'active' : ''}" onclick="selectDoc('${d.doc_id}')">
           <div class="meta">
             <span>${d.doc_id} • ${d.doc_type}</span>
@@ -268,16 +404,54 @@
       renderDocList();
     }
 
+    async function handleFileUpload(file) {
+      if (!file) return;
+      const btn = document.getElementById("processBtn");
+      btn.disabled = true;
+      btn.textContent = `Uploading & processing ${file.name}...`;
+      try {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("doc_id", `DOC-${Math.floor(400 + Math.random() * 500)}`);
+        form.append("confidence_threshold", document.getElementById("thresholdInput").value);
+        form.append("model_name", document.getElementById("modelInput").value.trim() || "llama3.2");
+        const res = await fetch("/api/workflow/upload", { method: "POST", body: form });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.detail || "Upload failed");
+          return;
+        }
+        document.getElementById("docIdInput").value = data.doc_id;
+        document.getElementById("docTitleInput").value = data.title;
+        renderResult(data);
+        await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Extract & Route Action Items";
+      }
+    }
+
+    const dz = document.getElementById("dropzone");
+    dz.addEventListener("dragover", e => { e.preventDefault(); dz.classList.add("dragover"); });
+    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+    dz.addEventListener("drop", e => {
+      e.preventDefault();
+      dz.classList.remove("dragover");
+      if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+    });
+
     async function processCurrentDoc() {
       const btn = document.getElementById("processBtn");
       btn.disabled = true;
-      btn.textContent = "Processing with llama3.2...";
+      btn.textContent = "Processing with LLM...";
       try {
         const payload = {
           doc_id: document.getElementById("docIdInput").value.trim() || "DOC-CUSTOM",
           title: document.getElementById("docTitleInput").value.trim() || "Untitled",
           doc_type: document.getElementById("docTypeInput").value.trim() || "Operational Document",
-          content: document.getElementById("docContentInput").value
+          content: document.getElementById("docContentInput").value,
+          confidence_threshold: Number(document.getElementById("thresholdInput").value),
+          model_name: document.getElementById("modelInput").value.trim() || "llama3.2"
         };
         const res = await fetch("/api/workflow/process", {
           method: "POST",
@@ -290,6 +464,29 @@
       } finally {
         btn.disabled = false;
         btn.textContent = "Extract & Route Action Items";
+      }
+    }
+
+    async function runAllSamples() {
+      const btn = document.getElementById("batchBtn");
+      btn.disabled = true;
+      btn.textContent = "Running...";
+      try {
+        for (const d of docs) {
+          await fetch("/api/workflow/process", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ...d,
+              confidence_threshold: Number(document.getElementById("thresholdInput").value),
+              model_name: document.getElementById("modelInput").value.trim() || "llama3.2"
+            })
+          });
+        }
+        await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Run All";
       }
     }
 
@@ -317,33 +514,50 @@
       container.innerHTML = res.action_items.map(item => `
         <div class="item-card">
           <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
-            <strong>${item.item_id}: ${item.title}</strong>
+            <strong>${item.item_id}</strong>
             <div>
               <span class="badge">${item.target_team} (${item.queue_channel})</span>
               <span class="badge ${badgeClass(item.validation_status)}">${item.validation_status}</span>
             </div>
           </div>
+          <div class="row" style="margin-top:8px;">
+            <input id="title-${item.item_id}" value="${item.title.replace(/"/g, '&quot;')}" style="flex:1;min-width:220px;" />
+            <input id="due-${item.item_id}" value="${item.due_date || ''}" placeholder="Due date" style="max-width:140px;" />
+          </div>
           <div style="font-size:12px;color:var(--muted);margin-top:6px;">
-            Priority: <strong>${item.priority}</strong> •
             Confidence: <strong>${Math.round(item.confidence * 100)}%</strong> •
             Quote Verified: <strong>${item.quote_verified ? "Yes" : "No"}</strong>
-            ${item.due_date ? `• Due: <strong>${item.due_date}</strong>` : ""}
           </div>
           ${item.review_reason ? `<div style="font-size:12px;color:var(--amber);margin-top:4px;">Guardrail: ${item.review_reason}</div>` : ""}
           <div class="quote">"${item.source_quote}"</div>
           <div class="row">
-            <select id="team-${item.item_id}" style="max-width:190px;">
+            <select id="team-${item.item_id}" style="max-width:185px;">
               ${TEAMS.map(t => `<option value="${t}" ${t === item.target_team ? "selected" : ""}>${t}</option>`).join("")}
             </select>
-            <button class="approve" onclick="validateItem('${res.doc_id}', '${item.item_id}', 'Approved')">Approve / Route</button>
+            <select id="prio-${item.item_id}" style="max-width:120px;">
+              ${PRIORITIES.map(p => `<option value="${p}" ${p === item.priority ? "selected" : ""}>${p}</option>`).join("")}
+            </select>
+            <button class="approve" onclick="validateItem('${res.doc_id}', '${item.item_id}', 'Approved')">Approve / Save</button>
             <button class="reject" onclick="validateItem('${res.doc_id}', '${item.item_id}', 'Rejected')">Reject</button>
           </div>
         </div>
       `).join("");
     }
 
+    let toastTimer = null;
+    function showToast(message, type = "ok") {
+      const el = document.getElementById("toast");
+      el.textContent = message;
+      el.className = `toast show ${type}`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { el.classList.remove("show"); }, 3500);
+    }
+
     async function validateItem(docId, itemId, action) {
       const selectedTeam = document.getElementById(`team-${itemId}`).value;
+      const selectedPrio = document.getElementById(`prio-${itemId}`).value;
+      const editedTitle = document.getElementById(`title-${itemId}`).value;
+      const editedDue = document.getElementById(`due-${itemId}`).value;
       const res = await fetch("/api/workflow/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -351,11 +565,36 @@
           doc_id: docId,
           item_id: itemId,
           action: action === "Approved" ? "Approved (Overridden)" : action,
-          override_team: selectedTeam
+          override_title: editedTitle,
+          override_team: selectedTeam,
+          override_priority: selectedPrio,
+          override_due_date: editedDue
         })
       });
+      const data = await res.json();
       if (res.ok) {
+        const sb = document.getElementById("resultStatusBadge");
+        sb.className = `badge ${badgeClass(data.doc_status)}`;
+        sb.textContent = data.doc_status;
+
+        const card = document.getElementById(`team-${itemId}`)?.closest(".item-card");
+        if (card && data.item) {
+          const badges = card.querySelectorAll(".badge");
+          if (badges[0]) badges[0].textContent = `${data.item.target_team} (${data.item.queue_channel})`;
+          if (badges[1]) {
+            badges[1].className = `badge ${badgeClass(data.item.validation_status)}`;
+            badges[1].textContent = data.item.validation_status;
+          }
+        }
+
+        if (action === "Approved") {
+          showToast(`✓ Saved & routed ${itemId} to ${selectedTeam} (${data.item.queue_channel})`, "ok");
+        } else {
+          showToast(`✕ Rejected ${itemId}`, "err");
+        }
         await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+      } else {
+        showToast(data.detail || `Failed updating ${itemId}`, "err");
       }
     }
 
@@ -364,11 +603,19 @@
       const data = await res.json();
       const grid = document.getElementById("queuesGrid");
       grid.innerHTML = Object.entries(data.queues).map(([team, items]) => `
-        <div class="queue-box">
+        <div class="queue-box ${selectedQueueTeam === team ? 'selected' : ''}" onclick="toggleQueueFilter('${team}')">
           <h4><span>${team}</span><span class="badge">${items.length}</span></h4>
-          ${items.length ? items.map(i => `<div class="queue-item"><strong>${i.doc_id}</strong>: ${i.title}</div>`).join("") : `<div class="queue-item" style="color:var(--muted);">Empty</div>`}
+          ${items.length ? items.map(i => `<div class="queue-item"><strong>${i.doc_id}</strong> [${i.priority}]: ${i.title}</div>`).join("") : `<div class="queue-item" style="color:var(--muted);">Empty</div>`}
         </div>
       `).join("");
+    }
+
+    function toggleQueueFilter(team) {
+      selectedQueueTeam = selectedQueueTeam === team ? null : team;
+      document.getElementById("queueFilterLabel").textContent = selectedQueueTeam
+        ? `Selected: ${selectedQueueTeam}`
+        : "Click any team to filter";
+      loadQueues();
     }
 
     async function loadAudit() {
@@ -386,7 +633,35 @@
       `).join("");
     }
 
+    async function openPolicyModal() {
+      document.getElementById("policyDialog").showModal();
+      const res = await fetch("/api/routing-rules");
+      const data = await res.json();
+      document.getElementById("policyContent").textContent = data.content || "No routing rules found.";
+    }
+
+    async function exportAuditJson() {
+      const [queuesRes, auditRes] = await Promise.all([fetch("/api/team-queues"), fetch("/api/audit-log")]);
+      const payload = {
+        exported_at: new Date().toISOString(),
+        team_queues: await queuesRes.json(),
+        audit_log: await auditRes.json(),
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "project3_workflow_evidence.json";
+      a.click();
+    }
+
+    async function resetSession() {
+      await fetch("/api/workflow/reset", { method: "POST" });
+      document.getElementById("resultsCard").style.display = "none";
+      await Promise.all([loadDocs(), loadQueues(), loadAudit()]);
+    }
+
     loadHealth();
+    loadModels();
     loadDocs();
     loadQueues();
   </script>
