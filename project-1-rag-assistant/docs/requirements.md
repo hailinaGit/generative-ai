@@ -94,26 +94,7 @@
 
 | Handbook Requirement | Project Deliverable | Location |
 | :--- | :--- | :--- |
-| **Source Code** | Ingestion, retrieval, LLM generator, FastAPI service, and UI | [`src/`](../src/) |
-| **Policy Knowledge Base** | Curated Cambodian Labor Law regulations | [`data/raw/cambodia_hr_regulations.md`](../data/raw/cambodia_hr_regulations.md) |
-| **Requirements Document** | Formal scope, business problem, and success criteria | [`docs/requirements.md`](./requirements.md) |
-| **Evaluation Evidence** | 10-query benchmark matrix & automated test output | [`docs/eval_results.md`](./eval_results.md) |
-| **Viva / Interview Prep** | Prepared answers to the 7 handbook interview defense questions | [`docs/viva_prep.md`](./viva_prep.md) |
-| **Automated Test Suite** | 5 unit and regression assertion tests | [`tests/test_rag.py`](../tests/test_rag.py) |
-| **10-Query LLM Benchmark** | End-to-end RAG evaluation script across Q01–Q10 | [`tests/evaluate_rag.py`](../tests/evaluate_rag.py) |
-| **README Runbook** | Complete installation, execution, and API guide | [`README.md`](../README.md) |
-
----
-
-## 8. Submission Artifacts Checklist (Handbook Section 11)
-- [x] `docs/requirements.md` (This document)
-- [x] `data/raw/cambodia_hr_regulations.md` (Approved Cambodian Labor Law & HR regulations)
-- [x] `src/ingest.py` (Text cleaning, header-based chunking, and ChromaDB ingestion)
-- [x] `src/retrieve.py` (Semantic cosine-similarity search and citation metadata retrieval)
-- [x] `src/generate.py` (Grounded local Ollama `llama3.2` generation and fallback control)
-- [x] `src/api.py` (FastAPI REST service)
-- [x] `src/static/index.html` (Interactive RAG web chat interface)
-- [x] `tests/test_rag.py` & `tests/evaluate_rag.py` (Automated unit test suite & 10-query LLM benchmark)
-- [x] `docs/eval_results.md` (10-query benchmark evaluation matrix & test evidence)
-- [x] `docs/viva_prep.md` (Handbook Section 16 interview defense guide)
-- [x] `README.md` (Project overview and quickstart runbook)
+| **Grounding & Faithfulness** | $\ge 95\%$ of generated statements must be directly supported by retrieved context. | Manual spot-check of a 10-query test set. |
+| **Hallucination Rate** | $< 5\%$ unsupported claims or fabricated policy details[cite: 1]. | Test set evaluation against edge-case queries not present in the docs. |
+| **Citation Accuracy** | $100\%$ of answers derived from documents must include correct source file references[cite: 1]. | Automated assertion checks in test scripts. |
+| **Reproducibility** | A mentor or reviewer must be able to spin up the service using the `README.md` instructions within 10 minutes[cite: 1]. | Clean-environment clone and test run. |
