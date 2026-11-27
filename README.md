@@ -42,7 +42,7 @@ HR personnel and legal compliance officers in Cambodia spend substantial adminis
 - **Grounded Generation (FR-03):** Local inference via **LangChain + Ollama (`llama3.2`)** with temperature `0.0`. Strict boundary control ensures off-topic or unapproved queries return the exact fallback message: `"I cannot find this information in the approved policy documents."`
 - **Citation Tracking (FR-04):** Every statement links to the source markdown, section header, and cosine distance score.
 - **API & UI Delivery:** Production-grade **FastAPI** service (`/health`, `/retrieve`, `/query`) paired with an interactive dark-themed web chat interface.
-- **Verification Harness:** Automated 5-test assertion suite with 100% compliance.
+- **Verification Harness:** Automated 9-test assertion suite with 100% compliance.
 
 ### 🧪 Verification Evidence
 - **Benchmark Evaluation:** 10-query test matrix documented in [`docs/eval_results.md`](./project-1-rag-assistant/docs/eval_results.md) demonstrating $\ge 95\%$ grounding and $0.0\%$ hallucination.
@@ -112,7 +112,7 @@ Operations coordinators manually parse meeting transcripts, incident postmortems
 - **Structured Extraction & Schemas (FR-01 & FR-03):** Pydantic V2 schemas (`DocumentInput`, `ActionItem`, `WorkflowResult`, `ValidationSubmission`) with `confidence`, `source_quote`, and `quote_verified`.
 - **Grounded Team Routing (FR-02):** Routes tasks strictly against [`team_directory.md`](./project-3-document-workflow/data/routing_rules/team_directory.md) (`Engineering`, `Finance`, `HR & People`, `Legal & Compliance`, `Customer Support`, `Operations`, `Manual Review`).
 - **Deterministic Safety & Uncertainty Guardrails (FR-04):** Rejects empty/invalid inputs (`Rejected`), routes `< 0.70` confidence or unverified quotes to `Manual Review`, and flags Legal items and Finance spend $> \$5,000$ for human validation.
-- **Validation Desk & Simulated Queues (FR-05 & FR-06):** FastAPI service and interactive dashboard (`/api/documents`, `/api/workflow/process`, `/api/workflow/validate`, `/api/team-queues`, `/api/audit-log`).
+- **Validation Desk & Simulated Queues (FR-05 & FR-06):** FastAPI service and interactive dashboard with file upload (`.txt`/`.md`/`.json`/`.pdf`), Ollama model selector, confidence slider, inline task editing, scrollable team queues, and audit export (`/api/documents`, `/api/workflow/process`, `/api/workflow/upload`, `/api/workflow/validate`, `/api/team-queues`, `/api/audit-log`).
 
 ### 🧪 Verification Evidence & Quickstart
 - **Deterministic Tests:** `cd project-3-document-workflow && python tests/test_workflow.py` (`100%` pass)
