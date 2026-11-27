@@ -91,6 +91,45 @@ def test_fallback_unsupported_query():
     print("✓ FR-03 (Hallucination Control): Exact fallback message triggered.")
 
 
+def test_retrieval_seniority_and_nssf():
+    """Verify FR-02 retrieval for Seniority Pay & Compensation section."""
+    chunks = retrieve_relevant_chunks(query="When is Seniority Pay paid for UDC contracts?", top_k=2)
+    assert len(chunks) > 0
+    combined = " ".join(c["content"] for c in chunks)
+    assert any("Compensation" in c["section"] for c in chunks), f"Unexpected sections: {[c['section'] for c in chunks]}"
+    assert "June" in combined and "December" in combined and "7.5" in combined
+    print("✓ FR-02 (Vector Search): Seniority Pay (June & December) retrieval test passed.")
+
+
+def test_retrieval_discipline_and_misconduct():
+    """Verify FR-02 retrieval for Workplace Discipline & Code of Conduct."""
+    chunks = retrieve_relevant_chunks(query="What is the progressive disciplinary scale before termination?", top_k=2)
+    assert len(chunks) > 0
+    combined = " ".join(c["content"] for c in chunks)
+    assert any("Discipline" in c["section"] for c in chunks), f"Unexpected sections: {[c['section'] for c in chunks]}"
+    assert "Verbal warning" in combined and "Written warning" in combined
+    print("✓ FR-02 (Vector Search): Workplace Discipline retrieval test passed.")
+
+
+def test_retrieval_probation_limits():
+    """Verify FR-02 retrieval for probationary limits across worker tiers."""
+    chunks = retrieve_relevant_chunks(query="What is the maximum probationary period for non-skilled workers?", top_k=2)
+    assert len(chunks) > 0
+    combined = " ".join(c["content"] for c in chunks)
+    assert "3 months" in combined and "1 month" in combined
+    print("✓ FR-02 (Vector Search): Probationary period retrieval test passed.")
+
+
+def test_top_k_zero_edge_case():
+    """Verify edge-case handling when top_k=0 returns empty chunks and safe fallback."""
+    chunks = retrieve_relevant_chunks(query="annual leave", top_k=0)
+    assert chunks == []
+    res = generate_answer(query="annual leave", top_k=0)
+    assert res["answer"] == "I cannot find this information in the approved policy documents."
+    assert res["citations"] == []
+    print("✓ FR-03 (Edge Case): top_k=0 safely triggers fallback with 0 citations.")
+
+
 def run_all_tests():
     print("=" * 60)
     print("Running Cambodia HR RAG Assistant Test Suite")
@@ -100,6 +139,10 @@ def run_all_tests():
     test_retrieval_overtime_policy()
     test_retrieval_citations_format()
     test_fallback_unsupported_query()
+    test_retrieval_seniority_and_nssf()
+    test_retrieval_discipline_and_misconduct()
+    test_retrieval_probation_limits()
+    test_top_k_zero_edge_case()
     print("=" * 60)
     print("All tests passed successfully! (100% compliance)")
     print("=" * 60)
